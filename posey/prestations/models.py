@@ -1,0 +1,44 @@
+from django.db import models
+from django.conf import settings
+
+class CategoriePrestation(models.Model):
+    nom = models.CharField(max_length=50)
+    description = models.TextField()
+
+class Prestation(models.Model):
+    STATUT_CHOICES = [
+        ('en_attente', 'En attente'),
+        ('accepte', 'Acceptée'),
+        ('terminee', 'Terminée'),
+        ('annulee', 'Annulée'),
+        ('refusee', 'Refusée')
+    ]
+    categorie = models.ForeignKey(CategoriePrestation, on_delete=models.CASCADE)
+    titre = models.CharField(max_length=50)
+    description = models.TextField()
+    prix = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    client = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='client_prestataire', on_delete=models.CASCADE, null=False)
+    date_demande = models.DateTimeField(auto_now_add=True)
+    prestataire = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='prestaion_prestataire', on_delete=models.CASCADE, null=True, blank=True)
+    statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default='en_attente')
+
+class Notification(models.Model):
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='sent_notifications', on_delete=models.CASCADE)
+    receiver = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='received_notifications', on_delete=models.CASCADE)
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    timestamp = models.DateTimeField(auto_now_add=True)  
+
+    def __str__(self):
+        return f"Notification from {self.sender} to {self.receiver}"
+
+class DemandeCiblee(models.Model):
+    prestation = models.ForeignKey(Prestation, on_delete=models.CASCADE, related_name='demandes_ciblees')
+    prestataire = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='demandes_recues')
+    date_envoi = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('prestation', 'prestataire')
+
+    def __str__(self):
+        return f"Demande pour {self.prestataire} concernant '{self.prestation.titre}'"
