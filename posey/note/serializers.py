@@ -56,5 +56,5 @@ class CommentaireNoteSerializer(serializers.ModelSerializer):
         model = Note
         fields = ['id', 'client', 'commentaire', 'score']
 
-    def get_client_nom(self, obj):
+    def get_client(self, obj):
         return f"{obj.client.nom} {obj.client.prenom}"

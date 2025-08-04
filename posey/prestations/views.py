@@ -173,7 +173,7 @@ class AccepterPrestationView(APIView):
     def post(self, request, id):
         try:
             prestation = Prestation.objects.get(id=id)
-            if prestation.accepter(request.user):
+            if prestation.accepte(request.user):
                 Notification.objects.create(
                     user=prestation.client,
                     message=f"Votre demande de prestation « {prestation.titre} » a été acceptée par {request.user.username}."

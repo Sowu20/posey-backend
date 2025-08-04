@@ -21,6 +21,13 @@ class Prestation(models.Model):
     date_demande = models.DateTimeField(auto_now_add=True)
     prestataire = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='prestaion_prestataire', on_delete=models.CASCADE, null=True, blank=True)
     statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default='en_attente')
+    def accepte(self, utilisateur):
+        if self.prestataire is None and self.statut == 'en attente':
+            self.prestataire = utilisateur
+            self.statut = 'accepte'
+            self.save()
+            return True
+        return False
 
 class Notification(models.Model):
     sender = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='sent_notifications', on_delete=models.CASCADE)

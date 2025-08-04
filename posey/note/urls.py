@@ -10,5 +10,5 @@ urlpatterns = [
     path('prestataires/top-notes/', TopPrestatairesAPIView.as_view(), name='top_prestataires'),
     path('prestataire-scores/', PrestataireScoreView.as_view(), name='prestataire-scores'),
     path('prestataire-note/<int:id>/', MoyenneNotePrestataireView.as_view(), name='moyenne-note-prestataire'),
-    path('commentaires/<int:id>/', CommentairesPrestataireView.as_view()),
+    path('commentaires/<int:prestataire_id>/', CommentairesPrestataireView.as_view()),
 ]

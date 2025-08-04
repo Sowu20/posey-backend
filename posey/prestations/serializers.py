@@ -46,12 +46,15 @@ class DetailPrestationSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class PrestationSerializer(serializers.ModelSerializer):
-    client = serializers.CharField(source='client.username', read_only=True)
-    prestataire = serializers.CharField(source='prestataire.username', read_only=True)
-    
+    client = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False)
+    client_username = serializers.CharField(source='client.username', read_only=True)
+    prestataire = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False)
+    prestataire_username = serializers.CharField(source='prestataire.username', read_only=True)
+
     class Meta:
         model = Prestation
-        fields = '__all__'
+        fields = ['id', 'categorie', 'titre', 'description', 'prix', 'client', 'client_username', 'prestataire', 'prestataire_username', 'date_demande', 'statut']
+
 
 class NoteSerializer(serializers.ModelSerializer):
     class Meta:
