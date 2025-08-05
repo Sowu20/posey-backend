@@ -95,8 +95,8 @@ class NotificationSerializer(serializers.ModelSerializer):
 
 class PrestationClientSerializer(serializers.ModelSerializer):
     categorie = serializers.CharField(source='categorie.nom', read_only=True)
-    prestataire = serializers.CharField(source='prestataire.username', read_only=True)
+    prestataire = serializers.CharField(source='prestataire.username', read_only=True) 
 
     class Meta:
         model = Prestation
-        fields = ['id', 'titre', 'statut', 'categorie', 'prestataire', 'date_demande']
+        fields = ['id', 'titre', 'statut', 'categorie', 'prestataire', 'date_demande'] 
