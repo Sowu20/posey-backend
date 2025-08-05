@@ -21,10 +21,16 @@ class Prestation(models.Model):
     date_demande = models.DateTimeField(auto_now_add=True)
     prestataire = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='prestaion_prestataire', on_delete=models.CASCADE, null=True, blank=True)
     statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default='en_attente')
-    def accepte(self, utilisateur):
+    def accepte(self, user):
         if self.prestataire is None and self.statut == 'en attente':
-            self.prestataire = utilisateur
+            self.prestataire = user
             self.statut = 'accepte'
+            self.save()
+            return True
+        return False
+    def refuse(self, user):
+        if self.statut == 'en_attente' and self.prestataire is None:
+            self.statut = 'refusee'
             self.save()
             return True
         return False
