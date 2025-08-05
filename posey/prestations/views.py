@@ -180,7 +180,7 @@ class AccepterPrestationView(APIView):
                 )
                 return Response({'message': 'Prestation acceptée'}, status=200)
             else:
-                return Response({'error': 'La prestation est déjà assigné.'}, status=400)
+                return Response({'error': 'Impossible d\'accepter cette prestation.'}, status=400)
         except Prestation.DoesNotExist:
             return Response({'error': 'Prestation introuvable'}, status=404)
         
@@ -387,21 +387,11 @@ class RefuserPrestationView(APIView):
     def post(self, request, id):
         try:
             prestation = Prestation.objects.get(id=id)
+            prestation.prestataire = None
+            prestation.statut = 'refusee'
+            prestation.save()
 
-            # Vérifie que seul le prestataire assigné peut refuser
-            if prestation.prestataire != request.user:
-                return Response({'error': "Vous n'êtes pas autorisé à refuser cette prestation."}, status=403)
-
-            if prestation.refuse(request.user):
-                # Notifier le client que la demande a été refusée
-                Notification.objects.create(
-                    user=prestation.client,
-                    message=f"Votre demande de prestation « {prestation.titre} » a été refusée par {request.user.username}."
-                )
-                return Response({'message': 'La prestation a été refusée avec succès.'})
-            else:
-                return Response({'error': 'Impossible de refuser cette prestation.'}, status=400)
-
+            return Response({'message': 'La prestation a été refusée avec succès.'})
         except Prestation.DoesNotExist:
             return Response({'error': 'Prestation non trouvée.'}, status=404)
         
