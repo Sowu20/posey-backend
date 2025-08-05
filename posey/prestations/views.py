@@ -1,7 +1,7 @@
 from rest_framework import viewsets, generics
 from users.permissions import IsAdmin, IsClient, IsPrestataire
 from prestations.models import CategoriePrestation, Notification, Prestation, DemandeCiblee
-from prestations.serializers import NotificationSerializer, PrestationClientSerializer, RegisterCategorieSerializer, RegisterPrestationSerializer, UpdateCategorieSerializer, UpdatePrestationSerializer, DetailCategorieSerializer, DetailPrestationSerializer, ListePrestataireSerializer, PrestationSerializer, NoteSerializer, PrestationDisponibleSerializer, DemandeCibleeSerializer, PrestationRefuseeSerializer
+from prestations.serializers import NotificationSerializer, PrestationClientSerializer, RegisterCategorieSerializer, RegisterPrestationSerializer, UpdateCategorieSerializer, UpdatePrestationSerializer, DetailCategorieSerializer, DetailPrestationSerializer, ListePrestataireSerializer, PrestationSerializer, NoteSerializer, PrestationDisponibleSerializer, DemandeCibleeSerializer, PrestationRefuseeSerializer, PrestataireSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status, serializers
 from rest_framework.views import APIView
@@ -59,6 +59,21 @@ class DeleteCategorieView(APIView):
             return Response({"Catégorie supprimé avec succès."}, status=204)
         except CategoriePrestation.DoesNotExist:
             return Response({"Catégorie introuvable."}, status=400)
+        
+class PrestatairesNonValidesView(generics.ListAPIView):
+    queryset = User.objects.filter(est_prestataire=True, est_valide=False)
+    serializer_class = PrestataireSerializer
+
+# Valider un prestataire
+class ValiderPrestataireView(APIView):
+   def post(self, request, id):
+        try:
+            user = User.objects.get(id=id, est_prestataire=True)
+            user.est_valide = True
+            user.save()
+            return Response({'message': 'Prestataire validé.'})
+        except User.DoesNotExist:
+            return Response({'error': 'Prestataire non trouvé.'}, status=404)
         
 # Prestation
 class RegisterPrestationView(generics.CreateAPIView):

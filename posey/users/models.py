@@ -16,6 +16,8 @@ class User(AbstractUser):
     ville = models.CharField(max_length=50)
     date_inscription = models.DateField(auto_now_add=True)
     categorie = models.ForeignKey(CategoriePrestation, on_delete=models.CASCADE, null=True, blank=True, related_name='prestataire')
+    est_prestataire = models.BooleanField(default=False)
+    est_valide = models.BooleanField(default=False)
 
 class Messages(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)

@@ -1,5 +1,5 @@
 from django.urls import path
-from prestations.views import RegisterCategorieView, PrestationClientView, PrestationRefusesView, PrestationsEnAttenteView, DemandePrestationView, RegisterPrestationView, UpdateCategorieView, PrestationsTermineesParPrestataire, UpdatePrestationView, GetCategorieView, GetPrestationView, DeleteCategorieView, DeletePrestationView, PrestataireView, AccepterPrestationView, PrestationsDisponibesParCategorie, PrestationsDisponiblesView, PrestataireAvisView, PrestataireNoteView, PrestatairePrestationsView, PrestataireStatsView, DemandeCibleeCreateView, DemandesRecuesView, RefuserPrestationView, NotificationListView, EnvoyerDemandeCibleeView, RepondreDemandeCibleeView, ListeNotificationsView, MarquerNotificationCommeLue
+from prestations.views import RegisterCategorieView, PrestationClientView, PrestationRefusesView, PrestatairesNonValidesView, ValiderPrestataireView, PrestationsEnAttenteView, DemandePrestationView, RegisterPrestationView, UpdateCategorieView, PrestationsTermineesParPrestataire, UpdatePrestationView, GetCategorieView, GetPrestationView, DeleteCategorieView, DeletePrestationView, PrestataireView, AccepterPrestationView, PrestationsDisponibesParCategorie, PrestationsDisponiblesView, PrestataireAvisView, PrestataireNoteView, PrestatairePrestationsView, PrestataireStatsView, DemandeCibleeCreateView, DemandesRecuesView, RefuserPrestationView, NotificationListView, EnvoyerDemandeCibleeView, RepondreDemandeCibleeView, ListeNotificationsView, MarquerNotificationCommeLue
 
 urlpatterns = [
     # Catégorie
@@ -7,6 +7,8 @@ urlpatterns = [
     path('update_categorie/<int:id>/', UpdateCategorieView.as_view(), name="update_categorie"),
     path('detail_categorie/', GetCategorieView.as_view(), name='detail_categorie'),
     path('delete_categorie/<int:id>/', DeleteCategorieView.as_view(), name="delete_categorie"),
+    path('prestataires/non_valides/', PrestatairesNonValidesView.as_view()),
+    path('valider_prestataire/<int:id>/', ValiderPrestataireView.as_view()),
     # Prestation
     path('register_prestation/', RegisterPrestationView.as_view(), name="register_prestation"),
     path('update_prestation/<int:id>/', UpdatePrestationView.as_view(), name="update_prestation"),

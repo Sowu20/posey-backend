@@ -64,7 +64,12 @@ class NoteSerializer(serializers.ModelSerializer):
 class CategoriePrestationSerializer(serializers.ModelSerializer):
     class Meta:
         model = CategoriePrestation
-        fields = ['id', 'nom']
+        fields = '__all__'
+
+class PrestataireSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'est_valide']
 
 class PrestationDisponibleSerializer(serializers.ModelSerializer):
     categorie = CategoriePrestationSerializer
