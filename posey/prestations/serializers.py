@@ -91,16 +91,12 @@ class PrestationRefuseeSerializer(serializers.ModelSerializer):
 class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
-        fields = '__all__'
+        fields = ['id', 'sender', 'message', 'is_read', 'timestamp']
 
 class PrestationClientSerializer(serializers.ModelSerializer):
     categorie = serializers.CharField(source='categorie.nom', read_only=True)
     prestataire = serializers.CharField(source='prestataire.username', read_only=True)
-    date_demande = serializers.SerializerMethodField()
 
     class Meta:
         model = Prestation
         fields = ['id', 'titre', 'statut', 'categorie', 'prestataire', 'date_demande']
-
-    def get_date_formatee(self, obj):
-        return obj.date_demande.strftime('%d %b %Y à %H:%M')

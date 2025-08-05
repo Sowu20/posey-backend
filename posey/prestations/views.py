@@ -358,13 +358,14 @@ class ListeNotificationsView(ListAPIView):
 class MarquerNotificationCommeLue(APIView):
     # permission_classes = [IsAuthenticated]
 
-    def post(self, request, id):
-        notif = Notification.objects.filter(id=id, utilisateur=request.user).first()
-        if notif:
-            notif.lu = True
-            notif.save()
-            return Response({"message": "Notification marquée comme lue"})
-        return Response({"error": "Notification introuvable"}, status=404)
+    def post(self, request, pk):
+        try:
+            notification = Notification.objects.get(id=pk, receiver=request.user)
+            notification.is_read = True
+            notification.save()
+            return Response({'message': 'Notification marquée comme lue.'})
+        except Notification.DoesNotExist:
+            return Response({'error': 'Notification non trouvée.'}, status=404)
 
 class DemandesRecuesView(APIView):
     def get(self, request, id):
@@ -412,11 +413,7 @@ class RefuserPrestationView(APIView):
         
 class NotificationListView(APIView):
     def get(self, request):
-        user_id = request.query_params.get('user_id')
-        if not user_id or str(request.user.id) != user_id:
-            return Response({'error': "Non autorisé"}, status=403)
-
-        notifications = Notification.objects.filter(user_id=user_id).order_by('-created_at')
+        notifications = Notification.objects.filter(receiver=request.user).order_by('-timestamp')
         serializer = NotificationSerializer(notifications, many=True)
         return Response(serializer.data)
 
