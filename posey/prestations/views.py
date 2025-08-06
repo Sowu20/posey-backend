@@ -413,9 +413,10 @@ class RefuserPrestationView(APIView):
         
 class NotificationListView(APIView):
     def get(self, request):
-        notifications = Notification.objects.filter(receiver=request.user).order_by('-timestamp')
+        # Filter by the receiver's primary key (ID)
+        notifications = Notification.objects.filter(receiver_id=request.user.id).order_by('-timestamp')
         serializer = NotificationSerializer(notifications, many=True)
-        return Response(serializer.data)
+        return Response(serializer.data) 
 
 class PrestationClientView(APIView):
     def get(self, request, id):
