@@ -137,6 +137,13 @@ class DemandePrestationView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
 
+        prestation = serializer.instance
+        if prestation.prestataire:
+            Notification.objects.create(
+                user=prestation.prestataire,
+                message=f"Vous avez reçu une nouvelle demande de prestation de la part de {request.user.username}."
+            )
+
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
 class demanderPerstationView(APIView):
@@ -406,17 +413,22 @@ class RefuserPrestationView(APIView):
             prestation.prestataire = None
             prestation.statut = 'refusee'
             prestation.save()
+            Notification.objects.create(
+                user=prestation.client,
+                message=f"Votre demande de prestation « {prestation.titre} » a été refusée par {request.user.username}."
+            )
 
             return Response({'message': 'La prestation a été refusée avec succès.'})
         except Prestation.DoesNotExist:
             return Response({'error': 'Prestation non trouvée.'}, status=404)
         
 class NotificationListView(APIView):
+    # permission_classes = [IsAuthenticated]
+
     def get(self, request):
-        # Filter by the receiver's primary key (ID)
-        notifications = Notification.objects.filter(receiver_id=request.user.id).order_by('-timestamp')
+        notifications = Notification.objects.filter(user=request.user.id).order_by('-timestamp')
         serializer = NotificationSerializer(notifications, many=True)
-        return Response(serializer.data) 
+        return Response(serializer.data)
 
 class PrestationClientView(APIView):
     def get(self, request, id):
