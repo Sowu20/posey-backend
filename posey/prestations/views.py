@@ -15,7 +15,7 @@ from django.db import transaction, models
 from django.utils import timezone
 from users.models import User
 from note.models import Note
-from notifications.utils import send_notification
+from notifications.handler import SendMessage
 
 # Catégorie
 class RegisterCategorieView(generics.CreateAPIView):
@@ -139,15 +139,8 @@ class DemandePrestationView(generics.CreateAPIView):
         self.perform_create(serializer)
 
         prestation = serializer.instance
-        if prestation.prestataire:
-            Notification.objects.create(
-                user=prestation.prestataire,
-                message=f"Vous avez reçu une nouvelle demande de prestation de la part de {request.user.username}."
-            )
-            send_notification(
-                user_id=prestation.prestataire.id,
-                message=f"Vous avez reçu une nouvelle demande de prestation de la part de {request.user.username}."
-            )
+        message = f"Vous avez reçu une nouvelle demande de prestation : « {prestation.titre} »."
+        SendMessage(users=prestation.prestataire, message=message, no_type="demande").send_message()
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
@@ -201,14 +194,8 @@ class AccepterPrestationView(APIView):
         try:
             prestation = Prestation.objects.get(id=id)
             if prestation.accepte(request.user):
-                Notification.objects.create(
-                    user=prestation.client,
-                    message=f"Votre demande de prestation « {prestation.titre} » a été acceptée par {request.user.username}."
-                )
-                send_notification(
-                    user_id=prestation.client,
-                    message=f"Votre demande de prestation « {prestation.titre} » a été acceptée par {request.user.username}."
-                )
+                message = f"Votre demande de prestation « {prestation.titre} » a été acceptée par {request.user.username}."
+                SendMessage(users=prestation.client, message=message, no_type="acceptation").send_message()
                 return Response({'message': 'Prestation acceptée'}, status=200)
             else:
                 return Response({'error': 'Impossible d\'accepter cette prestation.'}, status=400)
@@ -422,15 +409,10 @@ class RefuserPrestationView(APIView):
             prestation.prestataire = None
             prestation.statut = 'refusee'
             prestation.save()
-            Notification.objects.create(
-                user=prestation.client,
-                message=f"Votre demande de prestation « {prestation.titre} » a été refusée par {request.user.username}."
-            )
-            send_notification(
-                user_id=prestation.client.id,
-                message=f"Votre demande de prestation « {prestation.titre} » a été refusée par {request.user.username}."
-            )
-
+            if prestation.refuse(request.user):
+                message = f"Votre demande de prestation « {prestation.titre} » a été refusée par {request.user.username}."
+                SendMessage(users=prestation.client, message=message, no_type="refus").send_message()
+                
             return Response({'message': 'La prestation a été refusée avec succès.'})
         except Prestation.DoesNotExist:
             return Response({'error': 'Prestation non trouvée.'}, status=404)
