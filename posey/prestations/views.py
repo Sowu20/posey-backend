@@ -15,6 +15,7 @@ from django.db import transaction, models
 from django.utils import timezone
 from users.models import User
 from note.models import Note
+from notifications.utils import send_notification
 
 # Catégorie
 class RegisterCategorieView(generics.CreateAPIView):
@@ -143,6 +144,10 @@ class DemandePrestationView(generics.CreateAPIView):
                 user=prestation.prestataire,
                 message=f"Vous avez reçu une nouvelle demande de prestation de la part de {request.user.username}."
             )
+            send_notification(
+                user_id=prestation.prestataire.id,
+                message=f"Vous avez reçu une nouvelle demande de prestation de la part de {request.user.username}."
+            )
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
@@ -198,6 +203,10 @@ class AccepterPrestationView(APIView):
             if prestation.accepte(request.user):
                 Notification.objects.create(
                     user=prestation.client,
+                    message=f"Votre demande de prestation « {prestation.titre} » a été acceptée par {request.user.username}."
+                )
+                send_notification(
+                    user_id=prestation.client,
                     message=f"Votre demande de prestation « {prestation.titre} » a été acceptée par {request.user.username}."
                 )
                 return Response({'message': 'Prestation acceptée'}, status=200)
@@ -415,6 +424,10 @@ class RefuserPrestationView(APIView):
             prestation.save()
             Notification.objects.create(
                 user=prestation.client,
+                message=f"Votre demande de prestation « {prestation.titre} » a été refusée par {request.user.username}."
+            )
+            send_notification(
+                user_id=prestation.client.id,
                 message=f"Votre demande de prestation « {prestation.titre} » a été refusée par {request.user.username}."
             )
 
