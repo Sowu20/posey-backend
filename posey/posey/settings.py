@@ -7,14 +7,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-)kozn7!cqgydgx+2ow@5)eiby@&2=uyk-1g!84cbf4s2)-=zqs'
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "127.0.0.1:8000", "8aa70209b9d1.ngrok-free.app", "posey-frontend-y8so.vercel.app"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "127.0.0.1:8000", "6d5c937888a0.ngrok-free.app", "posey-frontend-y8so.vercel.app"]
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://127.0.0.1:8000",
     "http://127.0.0.1:4040",
-    "https://8aa70209b9d1.ngrok-free.app",
+    "https://6d5c937888a0.ngrok-free.app",
     "https://posey-frontend-y8so.vercel.app",
 ]
 
@@ -75,16 +75,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'posey.wsgi.application'
-ASGI_APPLICATION = 'posey.asgi.application'
-
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            'hosts': [('127.0.0.1', 6379)],
-        },
-    },
-}
 
 DATABASES = {
     'default': {
