@@ -38,5 +38,5 @@ urlpatterns = [
     path('envoyer-demande/', EnvoyerDemandeCibleeView.as_view()),
     path('repondre-demande/<int:id>/', RepondreDemandeCibleeView.as_view()),
     path('notifications/', ListeNotificationsView.as_view()),
-    path('notifications/lue/<int:id>/', MarquerNotificationCommeLue.as_view()),
+    path('notifications/lue/<int:pk>/', MarquerNotificationCommeLue.as_view()),
 ]

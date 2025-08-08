@@ -1,7 +1,8 @@
 from rest_framework import serializers
-from prestations.models import CategoriePrestation, Notification, Prestation, DemandeCiblee
+from prestations.models import CategoriePrestation, Prestation, DemandeCiblee
 from users.models import User
 from note.models import Note
+from notifications.models import Notification
 
 # Catégorie
 class RegisterCategorieSerializer(serializers.ModelSerializer):
@@ -91,7 +92,7 @@ class PrestationRefuseeSerializer(serializers.ModelSerializer):
 class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
-        fields = ['id', 'message', 'timestamp']
+        fields = ['id', 'user', 'message', 'created_at', 'read']
 
 class PrestationClientSerializer(serializers.ModelSerializer):
     categorie = serializers.CharField(source='categorie.nom', read_only=True)
