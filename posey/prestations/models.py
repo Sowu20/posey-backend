@@ -33,6 +33,15 @@ class Prestation(models.Model):
             self.save()
             return True
         return False
+
+class Notification(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications_user')
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    read = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Notification for {self.user.username}: {self.message}"
     
 class DemandeCiblee(models.Model):
     prestation = models.ForeignKey(Prestation, on_delete=models.CASCADE, related_name='demandes_ciblees')

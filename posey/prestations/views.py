@@ -1,9 +1,7 @@
 from rest_framework import viewsets, generics
 from users.permissions import IsAdmin, IsClient, IsPrestataire
-from prestations.models import CategoriePrestation, Prestation, DemandeCiblee
-from prestations.serializers import PrestationClientSerializer, RegisterCategorieSerializer, RegisterPrestationSerializer, UpdateCategorieSerializer, UpdatePrestationSerializer, DetailCategorieSerializer, DetailPrestationSerializer, ListePrestataireSerializer, PrestationSerializer, NoteSerializer, PrestationDisponibleSerializer, DemandeCibleeSerializer, PrestataireSerializer
-from notifications.models import Notification
-from notifications.serializers import NotificationSerializer
+from prestations.models import CategoriePrestation, Notification, Prestation, DemandeCiblee
+from prestations.serializers import PrestationClientSerializer, RegisterCategorieSerializer, RegisterPrestationSerializer, UpdateCategorieSerializer, UpdatePrestationSerializer, DetailCategorieSerializer, DetailPrestationSerializer, ListePrestataireSerializer, PrestationSerializer, NoteSerializer, PrestationDisponibleSerializer, DemandeCibleeSerializer, PrestataireSerializer, NotificationSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status, serializers
 from rest_framework.views import APIView

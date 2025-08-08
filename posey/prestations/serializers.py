@@ -1,8 +1,7 @@
 from rest_framework import serializers
-from prestations.models import CategoriePrestation, Prestation, DemandeCiblee
+from prestations.models import CategoriePrestation, Notification, Prestation, DemandeCiblee
 from users.models import User
 from note.models import Note
-from notifications.models import Notification
 
 # Catégorie
 class RegisterCategorieSerializer(serializers.ModelSerializer):
