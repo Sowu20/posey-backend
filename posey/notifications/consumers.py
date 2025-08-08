@@ -3,7 +3,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 
 class  NotificationConsumer ( AsyncWebsocketConsumer ): 
     async  def  connect ( self ): 
-        self.group_name = f"user_ {self.scope[ 'user' ]. id } " 
+        self.group_name = f"user_{self.scope['user'].id}"
 
         # Rejoindre le groupe de notification utilisateur 
         await self.channel_layer.group_add( 

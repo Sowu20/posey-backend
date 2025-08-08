@@ -77,12 +77,12 @@ TEMPLATES = [
 WSGI_APPLICATION = 'posey.wsgi.application'
 ASGI_APPLICATION = 'posey.asgi.application'
 
-# Configuration de Channels avec Redis
+# Configuration de Channels avec Redis jfvgtgfekjrerlreureg^pezzzzpot^fezlfbvkdfhshdsuririof
 CHANNEL_LAYERS = { 
     'default' : { 
         'BACKEND' : 'channels_redis.core.RedisChannelLayer' , 
         'CONFIG' : { 
-            "hosts" : [( '127.0.0.1' , 6379 )],
+            "hosts" : [('127.0.0.1',6379)],
          }, 
     }, 
 }
