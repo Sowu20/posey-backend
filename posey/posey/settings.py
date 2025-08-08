@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     'prestations',
     'users',
     'commandes',
-    'notifications',
 ]
 
 MIDDLEWARE = [

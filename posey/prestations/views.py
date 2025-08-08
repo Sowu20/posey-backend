@@ -1,7 +1,7 @@
 from rest_framework import viewsets, generics
 from users.permissions import IsAdmin, IsClient, IsPrestataire
 from prestations.models import CategoriePrestation, Notification, Prestation, DemandeCiblee
-from prestations.serializers import PrestationClientSerializer, RegisterCategorieSerializer, RegisterPrestationSerializer, UpdateCategorieSerializer, UpdatePrestationSerializer, DetailCategorieSerializer, DetailPrestationSerializer, ListePrestataireSerializer, PrestationSerializer, NoteSerializer, PrestationDisponibleSerializer, DemandeCibleeSerializer, PrestataireSerializer, NotificationSerializer
+from prestations.serializers import NotificationSerializer, PrestationClientSerializer, RegisterCategorieSerializer, RegisterPrestationSerializer, UpdateCategorieSerializer, UpdatePrestationSerializer, DetailCategorieSerializer, DetailPrestationSerializer, ListePrestataireSerializer, PrestationSerializer, NoteSerializer, PrestationDisponibleSerializer, DemandeCibleeSerializer, PrestationRefuseeSerializer, PrestataireSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status, serializers
 from rest_framework.views import APIView
@@ -15,9 +15,6 @@ from django.db import transaction, models
 from django.utils import timezone
 from users.models import User
 from note.models import Note
-# from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
-from notifications.utils import notify_user
 
 # Catégorie
 class RegisterCategorieView(generics.CreateAPIView):
@@ -142,11 +139,10 @@ class DemandePrestationView(generics.CreateAPIView):
 
         prestation = serializer.instance
         if prestation.prestataire:
-            notification = Notification.objects.create(
+            Notification.objects.create(
                 user=prestation.prestataire,
                 message=f"Vous avez reçu une nouvelle demande de prestation de la part de {request.user.username}."
             )
-            notify_user(prestation.prestataire.id, notification.message)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
@@ -200,11 +196,10 @@ class AccepterPrestationView(APIView):
         try:
             prestation = Prestation.objects.get(id=id)
             if prestation.accepte(request.user):
-                notification = Notification.objects.create(
-                    user = prestation.client,
+                Notification.objects.create(
+                    user=prestation.client,
                     message=f"Votre demande de prestation « {prestation.titre} » a été acceptée par {request.user.username}."
                 )
-                notify_user(prestation.client.id, notification.message)
                 return Response({'message': 'Prestation acceptée'}, status=200)
             else:
                 return Response({'error': 'Impossible d\'accepter cette prestation.'}, status=400)
@@ -368,16 +363,16 @@ class ListeNotificationsView(ListAPIView):
     
 # Marquer les messages comme lus
 class MarquerNotificationCommeLue(APIView):
-#     # permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
-    def patch(self, request, pk):
+    def post(self, request, pk):
         try:
-            notif = Notification.objects.get(id=pk, user=request.user)
-            notif.read = True
-            notif.save()
-            return Response({'status': 'Notification marquée comme lue'})
+            notification = Notification.objects.get(id=pk, receiver=request.user)
+            notification.is_read = True
+            notification.save()
+            return Response({'message': 'Notification marquée comme lue.'})
         except Notification.DoesNotExist:
-            return Response({'error': 'Notification introuvable'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': 'Notification non trouvée.'}, status=404)
 
 class DemandesRecuesView(APIView):
     def get(self, request, id):
@@ -418,21 +413,20 @@ class RefuserPrestationView(APIView):
             prestation.prestataire = None
             prestation.statut = 'refusee'
             prestation.save()
-            notification = Notification.objects.create(
+            Notification.objects.create(
                 user=prestation.client,
                 message=f"Votre demande de prestation « {prestation.titre} » a été refusée par {request.user.username}."
             )
-            notify_user(prestation.client.id, notification.message)
 
             return Response({'message': 'La prestation a été refusée avec succès.'})
         except Prestation.DoesNotExist:
             return Response({'error': 'Prestation non trouvée.'}, status=404)
         
 class NotificationListView(APIView):
-#     # permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        notifications = Notification.objects.filter(user=request.user.id).order_by('-created_at')
+        notifications = Notification.objects.filter(user=request.user.id).order_by('-timestamp')
         serializer = NotificationSerializer(notifications, many=True)
         return Response(serializer.data)
 
