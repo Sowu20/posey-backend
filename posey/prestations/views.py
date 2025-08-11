@@ -142,7 +142,7 @@ class DemandePrestationView(generics.CreateAPIView):
         if prestation.prestataire:
             Notification.objects.create(
                 user=prestation.prestataire,
-                message=f"Vous avez reçu une nouvelle demande de prestation de la part de {request.user.username}."
+                message=f"Vous avez une demande de prestation de la part de {request.user.username}."
             )
             notify_user(prestation.prestataire.id, f"Nouvelle demande de prestation : {prestation.titre}")
 
@@ -200,9 +200,9 @@ class AccepterPrestationView(APIView):
             if prestation.accepte(request.user):
                 Notification.objects.create(
                     user=prestation.client,
-                    message=f"Votre demande de prestation « {prestation.titre} » a été acceptée par {request.user.username}."
+                    message=f"Votre demande de prestation « {prestation.titre} » est acceptée par {request.user.username}."
                 )
-                notify_user(prestation.client.id, f"Votre demande de prestation « {prestation.titre} » a été acceptée par {request.user.username}.")
+                notify_user(prestation.client.id, f"Votre demande de prestation « {prestation.titre} » est acceptée par {request.user.username}.")
                 return Response({'message': 'Prestation acceptée'}, status=200)
             else:
                 return Response({'error': 'Impossible d\'accepter cette prestation.'}, status=400)
@@ -418,11 +418,11 @@ class RefuserPrestationView(APIView):
             prestation.save()
             Notification.objects.create(
                 user=prestation.client,
-                message=f"Votre demande de prestation « {prestation.titre} » a été refusée par {request.user.username}."
+                message=f"Votre demande de prestation « {prestation.titre} » est refusée par {request.user.username}."
             )
-            notify_user(prestation.client.id, f"Votre demande de prestation « {prestation.titre} » a été refusée par {request.user.username}.")
+            notify_user(prestation.client.id, f"Votre demande de prestation « {prestation.titre} » est refusée par {request.user.username}.")
 
-            return Response({'message': 'La prestation a été refusée avec succès.'})
+            return Response({'message': 'La prestation est refusée avec succès.'})
         except Prestation.DoesNotExist:
             return Response({'error': 'Prestation non trouvée.'}, status=404)
         
