@@ -15,6 +15,7 @@ from channels.auth import AuthMiddlewareStack
 import notifications.routing
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'posey.settings')
+django.setup()
 
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),
