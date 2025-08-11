@@ -427,10 +427,10 @@ class RefuserPrestationView(APIView):
             return Response({'error': 'Prestation non trouvée.'}, status=404)
         
 class NotificationListView(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        notifications = Notification.objects.filter(user=request.user.id).order_by('-timestamp')
+        notifications = Notification.objects.filter(user=request.user).order_by('-timestamp')
         serializer = NotificationSerializer(notifications, many=True)
         return Response(serializer.data)
 
