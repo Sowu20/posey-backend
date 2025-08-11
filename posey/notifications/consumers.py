@@ -3,13 +3,8 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 
 class NotificationConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        user = self.scope["user"]
-
-        if not user.is_authenticated:
-            await self.close()
-            return
-
-        self.group_name = f"user_{user.id}"
+        user_id = int(self.scope["url_route"]["kwargs"]["user_id"])
+        self.group_name = f"user_{user_id}"
         await self.channel_layer.group_add(self.group_name, self.channel_name)
         await self.accept()
 
