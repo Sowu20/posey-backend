@@ -373,11 +373,9 @@ class ListeNotificationsView(ListAPIView):
     
 # Marquer les messages comme lus
 class MarquerNotificationCommeLue(APIView):
-    # permission_classes = [IsAuthenticated]
-
-    def post(self, request, pk):
+    def post(self, request, id):
         try:
-            notification = Notification.objects.get(id=pk, user=request.user)
+            notification = Notification.objects.get(id=id, user=request.user)
             notification.is_read = True
             notification.save()
             return Response({'message': 'Notification marquée comme lue.'})
