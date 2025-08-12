@@ -133,8 +133,6 @@ class DemandePrestationView(generics.CreateAPIView):
                 {'error': 'Le client doit être spécifié ou vous devez être connecté.'}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
-        else:
-            client_user = User.objects.get(id=data['client'])
 
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
@@ -144,7 +142,7 @@ class DemandePrestationView(generics.CreateAPIView):
         if prestation.prestataire and prestation.client != prestation.prestataire:
             Notification.objects.create(
                 user=prestation.prestataire, 
-                message=f"Vous avez reçu une nouvelle demande de prestation de {client_user.user.username}."
+                message=f"Vous avez reçu une nouvelle demande de prestation de {request.user.username}."
             )
             notify_user(
                 prestation.prestataire.id,
@@ -379,7 +377,7 @@ class MarquerNotificationCommeLue(APIView):
 
     def post(self, request, pk):
         try:
-            notification = Notification.objects.get(id=pk, receiver=request.user)
+            notification = Notification.objects.get(id=pk, user=request.user)
             notification.is_read = True
             notification.save()
             return Response({'message': 'Notification marquée comme lue.'})
