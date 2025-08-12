@@ -133,6 +133,8 @@ class DemandePrestationView(generics.CreateAPIView):
                 {'error': 'Le client doit être spécifié ou vous devez être connecté.'}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
+        else:
+            client_user = User.objects.get(id=data['client'])
 
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
@@ -142,7 +144,7 @@ class DemandePrestationView(generics.CreateAPIView):
         if prestation.prestataire and prestation.client != prestation.prestataire:
             Notification.objects.create(
                 user=prestation.prestataire, 
-                message=f"Vous avez reçu une nouvelle demande de prestation de la part de {request.user.username}."
+                message=f"Vous avez reçu une nouvelle demande de prestation de {client_user.user.username}."
             )
             notify_user(
                 prestation.prestataire.id,
@@ -202,12 +204,12 @@ class AccepterPrestationView(APIView):
             prestation = Prestation.objects.get(id=id)
             if prestation.accepte(request.user):
                 Notification.objects.create(
-                    user=prestation.client,  # Client uniquement
-                    message=f"Votre demande de prestation « {prestation.titre} » a été acceptée par {request.user.username}."
+                    user=prestation.client,
+                    message=f"Votre demande de prestation {prestation.titre} est acceptée par {request.user.username}."
                 )
                 notify_user(
                     prestation.client.id,
-                    f"Votre demande de prestation « {prestation.titre} » a été acceptée par {request.user.username}."
+                    f"Votre demande de prestation {prestation.titre} est acceptée par {request.user.username}."
                 )
 
                 return Response({'message': 'Prestation acceptée'}, status=200)
@@ -425,11 +427,11 @@ class RefuserPrestationView(APIView):
             prestation.save()
             Notification.objects.create(
                 user=prestation.client, 
-                message=f"Votre demande de prestation « {prestation.titre} » a été refusée par {request.user.username}."
+                message=f"Votre demande de prestation {prestation.titre} est refusée par {request.user.username}."
             )
             notify_user(
                 prestation.client.id,
-                f"Votre demande de prestation « {prestation.titre} » a été refusée par {request.user.username}."
+                f"Votre demande de prestation {prestation.titre} est refusée par {request.user.username}."
             )
 
             return Response({'message': 'La prestation est refusée avec succès.'})
