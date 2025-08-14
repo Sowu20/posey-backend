@@ -89,8 +89,6 @@ class PrestationRefuseeSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class NotificationSerializer(serializers.ModelSerializer):
-    user = serializers.StringRelatedField()
-
     class Meta:
         model = Notification
         fields = ['id', 'message', 'timestamp', 'is_read']

@@ -16,6 +16,8 @@ from django.utils import timezone
 from users.models import User
 from note.models import Note
 from notifications.views import notify_user
+# from asgref.sync import async_to_sync
+# from channels.layers import get_channel_layer
 
 # Catégorie
 class RegisterCategorieView(generics.CreateAPIView):
@@ -125,7 +127,7 @@ class DemandePrestationView(generics.CreateAPIView):
 
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
-
+        
         if request.user.is_authenticated:
             data['client'] = request.user.id
         elif not data.get('client'):
@@ -135,10 +137,11 @@ class DemandePrestationView(generics.CreateAPIView):
             )
 
         serializer = self.get_serializer(data=data)
-        serializer.is_valid(raise_exception=True)
+        serializer.is_valid(raise_exception=True) 
         self.perform_create(serializer)
 
         prestation = serializer.instance
+        
         if prestation.prestataire and prestation.client != prestation.prestataire:
             Notification.objects.create(
                 user=prestation.prestataire, 
@@ -148,6 +151,14 @@ class DemandePrestationView(generics.CreateAPIView):
                 prestation.prestataire.id,
                 f"Nouvelle demande de prestation : {prestation.titre}"
             )
+            # channel_layer = get_channel_layer()
+            # async_to_sync(channel_layer.group_send)(
+            #     f"user_{prestation.prestataire.id}",  # même nom que celui utilisé dans ton consumer
+            #     {
+            #         "type": "send_notification",
+            #         "message": f"Nouvelle demande de prestation : {prestation.titre}"
+            #     }
+            # )
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
@@ -209,6 +220,14 @@ class AccepterPrestationView(APIView):
                     prestation.client.id,
                     f"Votre demande de prestation {prestation.titre} est acceptée par {request.user.username}."
                 )
+                # channel_layer = get_channel_layer()
+                # async_to_sync(channel_layer.group_send)(
+                #     f"user_{prestation.client.id}",
+                #     {
+                #         "type": "send_notification",
+                #         "message": f"Votre demande de prestation {prestation.titre} est acceptée par {request.user.username}."
+                #     }
+                # )
 
                 return Response({'message': 'Prestation acceptée'}, status=200)
             else:
@@ -429,6 +448,14 @@ class RefuserPrestationView(APIView):
                 prestation.client.id,
                 f"Votre demande de prestation {prestation.titre} est refusée par {request.user.username}."
             )
+            # channel_layer = get_channel_layer()
+            # async_to_sync(channel_layer.group_send)(
+            #     f"user_{prestation.client.id}",
+            #     {
+            #         "type": "send_notification",
+            #         "message": f"Votre demande de prestation {prestation.titre} a été refusée par {request.user.username}."
+            #     }
+            # )
 
             return Response({'message': 'La prestation est refusée avec succès.'})
         except Prestation.DoesNotExist:
@@ -436,7 +463,7 @@ class RefuserPrestationView(APIView):
         
 class NotificationListView(APIView):
     permission_classes = [IsAuthenticated]
-
+ 
     def get(self, request):
         notifications = Notification.objects.filter(user=request.user).order_by('-timestamp')
         serializer = NotificationSerializer(notifications, many=True)
