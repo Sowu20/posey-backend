@@ -15,7 +15,8 @@ from django.db import transaction, models
 from django.utils import timezone
 from users.models import User
 from note.models import Note
-from notifications.views import notify_user
+from notifications.utils import notify_user
+# from notifications.views import notify_user
 # from asgref.sync import async_to_sync
 # from channels.layers import get_channel_layer
 
@@ -148,8 +149,8 @@ class DemandePrestationView(generics.CreateAPIView):
                 message=f"Vous avez reçu une nouvelle demande de prestation de {request.user.username}."
             )
             notify_user(
-                prestation.prestataire.id,
-                f"Nouvelle demande de prestation : {prestation.titre}"
+                user_id = prestation.prestataire.id,
+                message = f"Nouvelle demande de prestation : {prestation.titre}"
             )
             # channel_layer = get_channel_layer()
             # async_to_sync(channel_layer.group_send)(
@@ -217,8 +218,8 @@ class AccepterPrestationView(APIView):
                     message=f"Votre demande de prestation {prestation.titre} est acceptée par {request.user.username}."
                 )
                 notify_user(
-                    prestation.client.id,
-                    f"Votre demande de prestation {prestation.titre} est acceptée par {request.user.username}."
+                    user_id = prestation.client.id,
+                    message = f"Votre demande de prestation {prestation.titre} est acceptée par {request.user.username}."
                 )
                 # channel_layer = get_channel_layer()
                 # async_to_sync(channel_layer.group_send)(
@@ -445,8 +446,8 @@ class RefuserPrestationView(APIView):
                 message=f"Votre demande de prestation {prestation.titre} est refusée par {request.user.username}."
             )
             notify_user(
-                prestation.client.id,
-                f"Votre demande de prestation {prestation.titre} est refusée par {request.user.username}."
+                user_id = prestation.client.id,
+                message = f"Votre demande de prestation {prestation.titre} est refusée par {request.user.username}."
             )
             # channel_layer = get_channel_layer()
             # async_to_sync(channel_layer.group_send)(
