@@ -463,6 +463,25 @@ class NotificationListView(APIView):
         notifications = Notification.objects.filter(user=request.user).order_by('-timestamp')
         serializer = NotificationSerializer(notifications, many=True)
         return Response(serializer.data)
+    
+# Supprimer une notification
+class SupprimerNotificationView(generics.DestroyAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, id):
+        try:
+            notification = Notification.objects.get(id=id, user=request.user)
+        except Notification.DoesNotExist:
+            return Response(
+                {"error": "Notification introuvable ou non autorisée."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        notification.delete()
+        return Response(
+            {"success": "Notification supprimée avec succès."},
+            status=status.HTTP_204_NO_CONTENT
+        )
 
 class PrestationClientView(APIView):
     def get(self, request, id):
