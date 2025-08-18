@@ -433,6 +433,7 @@ class RefuserPrestationView(APIView):
             prestation = Prestation.objects.get(id=id)
             prestataire = prestation.prestataire
             prestation.prestataire = None
+            
             prestation.statut = 'refusee'
             prestation.save()
             Notification.objects.create(
