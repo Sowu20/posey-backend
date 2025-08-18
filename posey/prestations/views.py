@@ -163,14 +163,6 @@ class DemandePrestationView(generics.CreateAPIView):
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
-class demanderPerstationView(APIView):
-    def post(self, request):
-        serializer = PrestationSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
 # Avoir les prestations du prestataire
 class PrestataireView(APIView):
     def get(self, request, id):
