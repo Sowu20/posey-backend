@@ -433,7 +433,7 @@ class RefuserPrestationView(APIView):
             prestation = Prestation.objects.get(id=id)
             prestataire = prestation.prestataire
             prestation.prestataire = None
-            
+
             prestation.statut = 'refusee'
             prestation.save()
             Notification.objects.create(
@@ -466,23 +466,14 @@ class NotificationListView(APIView):
         return Response(serializer.data)
     
 # Supprimer une notification
-class SupprimerNotificationView(generics.DestroyAPIView):
-    permission_classes = [IsAuthenticated]
-
+class SupprimerNotificationView(APIView):
     def delete(self, request, id):
         try:
             notification = Notification.objects.get(id=id, user=request.user)
+            notification.delete()
+            return Response({"message": "Notification supprimée"}, status=status.HTTP_204_NO_CONTENT)
         except Notification.DoesNotExist:
-            return Response(
-                {"error": "Notification introuvable ou non autorisée."},
-                status=status.HTTP_404_NOT_FOUND
-            )
-
-        notification.delete()
-        return Response(
-            {"success": "Notification supprimée avec succès."},
-            status=status.HTTP_204_NO_CONTENT
-        )
+            return Response({"error": "Notification introuvable"}, status=status.HTTP_404_NOT_FOUND)
 
 class PrestationClientView(APIView):
     def get(self, request, id):
