@@ -145,8 +145,8 @@ class DemandePrestationView(generics.CreateAPIView):
         
         if prestation.prestataire and prestation.client != prestation.prestataire:
             Notification.objects.create(
-                user=prestation.prestataire, 
-                message=f"Vous avez reçu une nouvelle demande de prestation de {request.user.username}."
+                user = prestation.prestataire, 
+                message = f"Vous avez reçu une nouvelle demande de prestation de {prestation.client.username}."
             )
             notify_user(
                 user_id = prestation.prestataire.id,
@@ -212,18 +212,15 @@ class AccepterPrestationView(APIView):
     def post(self, request, id):
         try:
             prestation = Prestation.objects.get(id=id)
-
-            prestation.prestataire = request.user
-            prestation.statut = "acceptee"
-            prestation.save()
+            
             if prestation.accepte(request.user):
                 Notification.objects.create(
                     user=prestation.client,
-                    message=f"Votre demande de prestation {prestation.titre} est acceptée par {request.user.username}."
+                    message=f"Votre demande de prestation {prestation.titre} est acceptée par {prestation.prestataire.username}."
                 )
                 notify_user(
                     user_id = prestation.client.id,
-                    message = f"Votre demande de prestation {prestation.titre} est acceptée par {request.user.username}."
+                    message = f"Votre demande de prestation {prestation.titre} est acceptée par {prestation.prestataire.username}."
                 )
                 # channel_layer = get_channel_layer()
                 # async_to_sync(channel_layer.group_send)(
@@ -442,16 +439,17 @@ class RefuserPrestationView(APIView):
     def post(self, request, id):
         try:
             prestation = Prestation.objects.get(id=id)
+            prestataire = prestation.prestataire
             prestation.prestataire = None
             prestation.statut = 'refusee'
             prestation.save()
             Notification.objects.create(
                 user=prestation.client, 
-                message=f"Votre demande de prestation {prestation.titre} est refusée par {request.user.username}."
+                message=f"Votre demande de prestation {prestation.titre} est refusée par {prestataire.username if prestataire else 'le prestataire'}."
             )
             notify_user(
                 user_id = prestation.client.id,
-                message = f"Votre demande de prestation {prestation.titre} est refusée par {request.user.username}."
+                message = f"Votre demande de prestation {prestation.titre} est refusée par {prestataire.username if prestataire else 'le prestataire'}."
             )
             # channel_layer = get_channel_layer()
             # async_to_sync(channel_layer.group_send)(
