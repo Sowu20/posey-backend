@@ -212,6 +212,10 @@ class AccepterPrestationView(APIView):
     def post(self, request, id):
         try:
             prestation = Prestation.objects.get(id=id)
+
+            prestation.prestataire = request.user
+            prestation.statut = "acceptee"
+            prestation.save()
             if prestation.accepte(request.user):
                 Notification.objects.create(
                     user=prestation.client,
