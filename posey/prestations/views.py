@@ -144,13 +144,14 @@ class DemandePrestationView(generics.CreateAPIView):
         prestation = serializer.instance
         
         if prestation.prestataire and prestation.client != prestation.prestataire:
+            client_username = prestation.client.username if prestation.client else "Un client"
             Notification.objects.create(
                 user = prestation.prestataire, 
-                message = f"Vous avez reçu une nouvelle demande de prestation de {prestation.client.username}."
+                message = f"Vous avez reçu une nouvelle demande de prestation de {client_username}."
             )
             notify_user(
                 user_id = prestation.prestataire.id,
-                message = f"Nouvelle demande de prestation : {prestation.titre}"
+                message = f"Nouvelle demande de prestation : {prestation.titre} par {client_username}."
             )
             # channel_layer = get_channel_layer()
             # async_to_sync(channel_layer.group_send)(
@@ -206,13 +207,14 @@ class AccepterPrestationView(APIView):
             prestation = Prestation.objects.get(id=id)
             
             if prestation.accepte(request.user):
+                prestataire_username = prestation.prestataire.username if prestation.prestataire else "Un prestataire"
                 Notification.objects.create(
                     user=prestation.client,
-                    message=f"Votre demande de prestation {prestation.titre} est acceptée par {prestation.prestataire.username}."
+                    message=f"Votre demande de prestation {prestation.titre} est acceptée par {prestataire_username}."
                 )
                 notify_user(
                     user_id = prestation.client.id,
-                    message = f"Votre demande de prestation {prestation.titre} est acceptée par {prestation.prestataire.username}."
+                    message = f"Votre demande de prestation {prestation.titre} est acceptée par {prestataire_username}."
                 )
                 # channel_layer = get_channel_layer()
                 # async_to_sync(channel_layer.group_send)(
@@ -431,18 +433,18 @@ class RefuserPrestationView(APIView):
     def post(self, request, id):
         try:
             prestation = Prestation.objects.get(id=id)
-            prestataire = prestation.prestataire
+            prestataire_username = prestation.prestataire
             prestation.prestataire = None
 
             prestation.statut = 'refusee'
             prestation.save()
             Notification.objects.create(
                 user=prestation.client, 
-                message=f"Votre demande de prestation {prestation.titre} est refusée par {prestataire.username if prestataire else 'le prestataire'}."
+                message=f"Votre demande de prestation {prestation.titre} est refusée par {prestataire_username}."
             )
             notify_user(
                 user_id = prestation.client.id,
-                message = f"Votre demande de prestation {prestation.titre} est refusée par {prestataire.username if prestataire else 'le prestataire'}."
+                message = f"Votre demande de prestation {prestation.titre} est refusée par {prestataire_username}."
             )
             # channel_layer = get_channel_layer()
             # async_to_sync(channel_layer.group_send)(
