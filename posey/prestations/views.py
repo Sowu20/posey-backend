@@ -128,7 +128,6 @@ class DemandePrestationView(generics.CreateAPIView):
 
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
-        
         if request.user.is_authenticated:
             data['client'] = request.user.id
         elif not data.get('client'):
@@ -145,6 +144,7 @@ class DemandePrestationView(generics.CreateAPIView):
         
         if prestation.prestataire and prestation.client != prestation.prestataire:
             client_username = prestation.client.username if prestation.client else "Un client"
+
             Notification.objects.create(
                 user = prestation.prestataire, 
                 message = f"Vous avez reçu une nouvelle demande de prestation de {client_username}."
@@ -155,7 +155,7 @@ class DemandePrestationView(generics.CreateAPIView):
             )
             # channel_layer = get_channel_layer()
             # async_to_sync(channel_layer.group_send)(
-            #     f"user_{prestation.prestataire.id}",  # même nom que celui utilisé dans ton consumer
+            #     f"user_{prestation.prestataire.id}", 
             #     {
             #         "type": "send_notification",
             #         "message": f"Nouvelle demande de prestation : {prestation.titre}"
@@ -205,9 +205,9 @@ class AccepterPrestationView(APIView):
     def post(self, request, id):
         try:
             prestation = Prestation.objects.get(id=id)
-            
             if prestation.accepte(request.user):
                 prestataire_username = prestation.prestataire.username if prestation.prestataire else "Un prestataire"
+                
                 Notification.objects.create(
                     user=prestation.client,
                     message=f"Votre demande de prestation {prestation.titre} est acceptée par {prestataire_username}."
@@ -435,9 +435,9 @@ class RefuserPrestationView(APIView):
             prestation = Prestation.objects.get(id=id)
             prestataire_username = prestation.prestataire
             prestation.prestataire = None
-
             prestation.statut = 'refusee'
             prestation.save()
+            
             Notification.objects.create(
                 user=prestation.client, 
                 message=f"Votre demande de prestation {prestation.titre} est refusée par {prestataire_username}."
