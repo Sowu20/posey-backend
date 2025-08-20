@@ -89,9 +89,11 @@ class PrestationRefuseeSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class NotificationSerializer(serializers.ModelSerializer):
+    prestation = serializers.CharField(source='prestation.description', read_only=True)
+
     class Meta:
         model = Notification
-        fields = ['id', 'message', 'timestamp', 'is_read']
+        fields = ['id', 'message', 'prestation', 'timestamp', 'is_read']
 
 class PrestationClientSerializer(serializers.ModelSerializer):
     categorie = serializers.CharField(source='categorie.nom', read_only=True)

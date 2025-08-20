@@ -37,6 +37,7 @@ class Prestation(models.Model):
 class Notification(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     message = models.TextField()
+    prestation = models.ForeignKey(Prestation, on_delete=models.CASCADE, null=True, blank=True, related_name='notifications')
     timestamp = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
     
