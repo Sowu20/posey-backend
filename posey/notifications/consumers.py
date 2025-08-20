@@ -22,10 +22,10 @@ class NotificationConsumer(AsyncWebsocketConsumer):
 
     async def send_notification(self, event):
         notification = event['message']
-        playload = event['palyload']
+        payload = event['payload']
 
         # Send message to WebSocket
         await self.send(text_data=json.dumps({
             'notification': notification,
-            'playload': playload
+            'payload': payload
         }))

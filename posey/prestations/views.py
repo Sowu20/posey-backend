@@ -147,11 +147,19 @@ class DemandePrestationView(generics.CreateAPIView):
 
             Notification.objects.create(
                 user = prestation.prestataire, 
-                message = f"Vous avez reçu une nouvelle demande de prestation de {client_username}."
+                message = f"Vous avez reçu une nouvelle demande de prestation de {client_username}.",
+                prestation = prestation
             )
             notify_user(
                 user_id = prestation.prestataire.id,
-                message = f"Nouvelle demande de prestation : {prestation.titre} par {client_username}."
+                message = f"Nouvelle demande de prestation : {prestation.titre} par {client_username}.",
+                payload = {
+                    "id": prestation.id,
+                    "titre": prestation.titre,
+                    "description": prestation.description,
+                    "client": prestation.client_username,
+                    "date_demande": str(prestation.date_demande),
+                }
             )
             # channel_layer = get_channel_layer()
             # async_to_sync(channel_layer.group_send)(
@@ -396,6 +404,16 @@ class MarquerNotificationCommeLue(APIView):
             return Response({'message': 'Notification marquée comme lue.'})
         except Notification.DoesNotExist:
             return Response({'error': 'Notification non trouvée.'}, status=404)
+        
+class MarquerTousLue(APIView):
+    def post(self, request):
+        try:
+            notification = Notification.objects.get(user=request.user)
+            notification.is_read = True
+            notification.save()
+            return Response({'message': 'Toutes les notifications marquées comme lues.'})
+        except Notification.DoesNotExist:
+            return Response({'error': 'Aucune notification trouvée.'}, status=404)
 
 class DemandesRecuesView(APIView):
     def get(self, request, id):

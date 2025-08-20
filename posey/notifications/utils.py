@@ -12,6 +12,6 @@ def notify_user(user_id: int, message: str, payload: dict | None = None):
         {
             "type": "send_notification",
             "message": message,
-            # "payload": payload or {},
+            "payload": payload or {},
         }
     )

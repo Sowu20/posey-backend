@@ -1,5 +1,5 @@
 from django.urls import path
-from prestations.views import RegisterCategorieView, SupprimerNotificationView, PrestationClientView, PrestationRefusesView, PrestatairesNonValidesView, ValiderPrestataireView, PrestationsEnAttenteView, DemandePrestationView, RegisterPrestationView, UpdateCategorieView, PrestationsTermineesParPrestataire, UpdatePrestationView, GetCategorieView, GetPrestationView, DeleteCategorieView, DeletePrestationView, PrestataireView, AccepterPrestationView, PrestationsDisponibesParCategorie, PrestationsDisponiblesView, PrestataireAvisView, PrestataireNoteView, PrestatairePrestationsView, PrestataireStatsView, DemandeCibleeCreateView, DemandesRecuesView, RefuserPrestationView, NotificationListView, EnvoyerDemandeCibleeView, RepondreDemandeCibleeView, ListeNotificationsView, MarquerNotificationCommeLue
+from prestations.views import RegisterCategorieView, SupprimerNotificationView, PrestationClientView, PrestationRefusesView, PrestatairesNonValidesView, ValiderPrestataireView, PrestationsEnAttenteView, DemandePrestationView, RegisterPrestationView, UpdateCategorieView, PrestationsTermineesParPrestataire, UpdatePrestationView, GetCategorieView, GetPrestationView, DeleteCategorieView, DeletePrestationView, PrestataireView, AccepterPrestationView, PrestationsDisponibesParCategorie, PrestationsDisponiblesView, PrestataireAvisView, PrestataireNoteView, PrestatairePrestationsView, PrestataireStatsView, DemandeCibleeCreateView, DemandesRecuesView, RefuserPrestationView, NotificationListView, EnvoyerDemandeCibleeView, RepondreDemandeCibleeView, ListeNotificationsView, MarquerNotificationCommeLue, MarquerTousLue
 
 urlpatterns = [
     # Catégorie
@@ -39,5 +39,6 @@ urlpatterns = [
     path('repondre-demande/<int:id>/', RepondreDemandeCibleeView.as_view()),
     path('notifications/', ListeNotificationsView.as_view()),
     path('notifications/lue/<int:id>/', MarquerNotificationCommeLue.as_view()),
+    path('notifications/tous_lues/', MarquerTousLue.as_view()),
     path('notifications/supprimer/<int:id>/', SupprimerNotificationView.as_view()),
 ]
