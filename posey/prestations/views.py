@@ -493,7 +493,7 @@ class SupprimerNotificationView(APIView):
             notification.delete()
             return Response({"message": "Notification supprimée"}, status=status.HTTP_204_NO_CONTENT)
         except Notification.DoesNotExist:
-            return Response({"error": "Notification introuvable"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "Notification introuvable"}, status=status.HTTP_404_NOT_FOUND) 
 
 class PrestationClientView(APIView):
     def get(self, request, id):

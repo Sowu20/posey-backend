@@ -22,7 +22,6 @@ class Prestation(models.Model):
     prestataire = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='prestaion_prestataire', on_delete=models.CASCADE, null=True, blank=True)
     statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default='en_attente')
     def accepte(self, user):
-        # Une prestation peut être acceptée si :
         if self.statut != 'en_attente':
             return False   
         if self.prestataire is not None and self.prestataire != user:
