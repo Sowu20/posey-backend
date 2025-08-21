@@ -18,7 +18,7 @@ from drf_yasg import openapi
 logger = logging.getLogger(__name__)
 
 PAYGATE_API_URL = "https://paygateglobal.com/api/v1/pay"
-PAYGATE_AUTH_TOKEN = "38710af9-f48a-460f-9cc8-17ee424b7b34"  # À configurer dans les variables d’environnement idéalement
+PAYGATE_AUTH_TOKEN = "38710af9-f48a-460f-9cc8-17ee424b7b34"
 
 class FairePaiementView(APIView):
     @swagger_auto_schema(
