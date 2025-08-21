@@ -131,7 +131,7 @@ class FairePaiementView(APIView):
                 "auth_token": PAYGATE_AUTH_TOKEN,
                 "phone_number": phone_number,
                 "amount": float(amount),
-                "reference": identifier,
+                "identifier": identifier,
                 "network": network
             }
             
@@ -236,11 +236,7 @@ class FairePaiementView(APIView):
             3: "Montant invalide.",
             4: "Numéro de téléphone invalide.",
             5: "Réseau non supporté.",
-            6: "Erreur de configuration ou service temporairement indisponible.",
-            7: "Solde insuffisant.",
-            8: "Transaction déjà en cours.",
-            9: "Limite de transaction dépassée.",
-            10: "Compte bloqué ou suspendu."
+            6: "Erreur de configuration ou service temporairement indisponible."
         }
         
         return error_messages.get(status_code, f"Erreur PayGate inconnue (code: {status_code})")
