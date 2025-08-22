@@ -131,7 +131,10 @@ class DemandePrestationView(generics.CreateAPIView):
         if request.user.is_authenticated:
             data['client'] = request.user.id
         elif not data.get('client'):
-            return Response({'error': 'Le client doit être spécifié ou vous devez être connecté.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'error': 'Le client doit être spécifié ou vous devez être connecté.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
@@ -139,10 +142,11 @@ class DemandePrestationView(generics.CreateAPIView):
 
         prestation = serializer.instance
 
+        # On génère un username client (sécurisé même si pas de client)
+        client_username = prestation.client.username if prestation.client else "Un client"
+
         # notifier le prestataire ciblé
         if prestation.prestataire_cible:
-            client_username = prestation.client.username if prestation.client else "Un client"
-
             Notification.objects.create(
                 user=prestation.prestataire_cible,
                 message=f"Vous avez reçu une nouvelle demande de prestation de {client_username}.",
@@ -155,7 +159,7 @@ class DemandePrestationView(generics.CreateAPIView):
                     "id": prestation.id,
                     "titre": prestation.titre,
                     "description": prestation.description,
-                    "client": client_username,
+                    "client": client_username, 
                     "date_demande": str(prestation.date_demande),
                 }
             )
