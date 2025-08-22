@@ -143,23 +143,23 @@ class DemandePrestationView(generics.CreateAPIView):
         prestation = serializer.instance
 
         # On génère un username client (sécurisé même si pas de client)
-        client = prestation.client.username if prestation.client else "Un client"
+        client_username = prestation.client.username if prestation.client else "Un client"
 
         # notifier le prestataire ciblé
         if prestation.prestataire_cible:
             Notification.objects.create(
                 user=prestation.prestataire_cible,
-                message=f"Vous avez reçu une nouvelle demande de prestation de {client}.",
+                message=f"Vous avez reçu une nouvelle demande de prestation de {client_username}.",
                 prestation=prestation
             )
             notify_user(
                 user_id=prestation.prestataire_cible.id,
-                message=f"Nouvelle demande de prestation : {prestation.titre} par {client}.",
+                message=f"Nouvelle demande de prestation : {prestation.titre} par {client_username}.",
                 payload={
                     "id": prestation.id,
                     "titre": prestation.titre,
                     "description": prestation.description,
-                    "client": client, 
+                    "client": client_username, 
                     "date_demande": str(prestation.date_demande),
                 }
             )
