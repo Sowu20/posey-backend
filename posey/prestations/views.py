@@ -207,22 +207,29 @@ class AccepterPrestationView(APIView):
     def post(self, request, id):
         try:
             prestation = Prestation.objects.get(id=id)
-            # prestation.save()
-            if prestation.accepte(request.user):
-                # prestataire_username = prestation.prestataire.username if prestation.prestataire else "Un prestataire"
-                
-                Notification.objects.create(
-                    user=prestation.client,
-                    message=f"Votre demande de prestation {prestation.titre} est acceptée par {request.user.username}."
-                )
-                notify_user(
-                    user_id = prestation.client.id,
-                    message = f"Votre demande de prestation {prestation.titre} est acceptée par {request.user.username}."
-                )
 
-                return Response({'message': 'Prestation acceptée'}, status=200)
-            else:
-                return Response({'error': 'Impossible d\'accepter cette prestation.'}, status=400)
+            # Vérifie que la prestation est encore libre
+            if prestation.statut != "en_attente" or prestation.prestataire is not None:
+                return Response({'error': 'Cette prestation a déjà été attribuée.'}, status=400)
+
+            # Assigner le prestataire connecté
+            prestation.prestataire = request.user
+            prestation.statut = "accepte"
+            prestation.save()
+
+            # Créer la notification
+            Notification.objects.create(
+                user=prestation.client,
+                message=f"Votre demande de prestation {prestation.titre} est acceptée par {request.user.username}."
+            )
+
+            notify_user(
+                user_id=prestation.client.id,
+                message=f"Votre demande de prestation {prestation.titre} est acceptée par {request.user.username}."
+            )
+
+            return Response({'message': 'Prestation acceptée'}, status=200)
+
         except Prestation.DoesNotExist:
             return Response({'error': 'Prestation introuvable'}, status=404)
         
