@@ -20,16 +20,19 @@ class Prestation(models.Model):
     client = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='client_prestataire', on_delete=models.CASCADE, null=False)
     date_demande = models.DateTimeField(auto_now_add=True)
     prestataire = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='prestaion_prestataire', on_delete=models.CASCADE, null=True, blank=True)
+    # Prestataire visé par le client (mais pas encore accepté)
+    prestataire_cible = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='prestations_ciblees', on_delete=models.CASCADE, null=True, blank=True)
     statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default='en_attente')
     def accepte(self, user):
         if self.statut != 'en_attente':
-            return False   
-        if self.prestataire is not None and self.prestataire != user:
+            return False
+        if self.prestataire_cible != user: 
             return False
         self.prestataire = user
         self.statut = 'accepte'
         self.save()
         return True
+    
     def refuse(self, user):
         if self.statut == 'en_attente' and (self.prestataire is None or self.prestataire == user):
             self.statut = 'refusee'

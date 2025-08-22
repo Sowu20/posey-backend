@@ -142,16 +142,16 @@ class DemandePrestationView(generics.CreateAPIView):
 
         prestation = serializer.instance
         
-        if prestation.prestataire and prestation.client != prestation.prestataire:
+        if prestation.prestataire_cible and prestation.client != prestation.prestataire:
             client_username = prestation.client.username if prestation.client else "Un client"
 
             Notification.objects.create(
-                user = prestation.prestataire, 
+                user = prestation.prestataire_cible, 
                 message = f"Vous avez reçu une nouvelle demande de prestation de {client_username}.",
                 prestation = prestation
             )
             notify_user(
-                user_id = prestation.prestataire.id,
+                user_id = prestation.prestataire_cible.id,
                 message = f"Nouvelle demande de prestation : {prestation.titre} par {client_username}.",
                 payload = {
                     "id": prestation.id,
@@ -161,14 +161,6 @@ class DemandePrestationView(generics.CreateAPIView):
                     "date_demande": str(prestation.date_demande),
                 }
             )
-            # channel_layer = get_channel_layer()
-            # async_to_sync(channel_layer.group_send)(
-            #     f"user_{prestation.prestataire.id}", 
-            #     {
-            #         "type": "send_notification",
-            #         "message": f"Nouvelle demande de prestation : {prestation.titre}"
-            #     }
-            # )
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
@@ -213,29 +205,18 @@ class AccepterPrestationView(APIView):
     def post(self, request, id):
         try:
             prestation = Prestation.objects.get(id=id)
-
-            prestation.prestataire = request.user
-            prestation.statut = 'accepte'
-            prestation.save()
+            # prestation.save()
             if prestation.accepte(request.user):
-                prestataire_username = prestation.prestataire.username if prestation.prestataire else "Un prestataire"
+                # prestataire_username = prestation.prestataire.username if prestation.prestataire else "Un prestataire"
                 
                 Notification.objects.create(
                     user=prestation.client,
-                    message=f"Votre demande de prestation {prestation.titre} est acceptée par {prestataire_username}."
+                    message=f"Votre demande de prestation {prestation.titre} est acceptée par {request.user.username}."
                 )
                 notify_user(
                     user_id = prestation.client.id,
-                    message = f"Votre demande de prestation {prestation.titre} est acceptée par {prestataire_username}."
+                    message = f"Votre demande de prestation {prestation.titre} est acceptée par {request.user.username}."
                 )
-                # channel_layer = get_channel_layer()
-                # async_to_sync(channel_layer.group_send)(
-                #     f"user_{prestation.client.id}",
-                #     {
-                #         "type": "send_notification",
-                #         "message": f"Votre demande de prestation {prestation.titre} est acceptée par {request.user.username}."
-                #     }
-                # )
 
                 return Response({'message': 'Prestation acceptée'}, status=200)
             else:
@@ -468,14 +449,6 @@ class RefuserPrestationView(APIView):
                 user_id = prestation.client.id,
                 message = f"Votre demande de prestation {prestation.titre} est refusée par {prestataire_username}."
             )
-            # channel_layer = get_channel_layer()
-            # async_to_sync(channel_layer.group_send)(
-            #     f"user_{prestation.client.id}",
-            #     {
-            #         "type": "send_notification",
-            #         "message": f"Votre demande de prestation {prestation.titre} a été refusée par {request.user.username}."
-            #     }
-            # )
 
             return Response({'message': 'La prestation est refusée avec succès.'})
         except Prestation.DoesNotExist:
