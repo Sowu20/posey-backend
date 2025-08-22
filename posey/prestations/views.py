@@ -131,29 +131,27 @@ class DemandePrestationView(generics.CreateAPIView):
         if request.user.is_authenticated:
             data['client'] = request.user.id
         elif not data.get('client'):
-            return Response(
-                {'error': 'Le client doit être spécifié ou vous devez être connecté.'}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({'error': 'Le client doit être spécifié ou vous devez être connecté.'}, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = self.get_serializer(data=data)
-        serializer.is_valid(raise_exception=True) 
+        serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
 
         prestation = serializer.instance
-        
-        if prestation.prestataire_cible and prestation.client != prestation.prestataire:
+
+        # notifier le prestataire ciblé
+        if prestation.prestataire_cible:
             client_username = prestation.client.username if prestation.client else "Un client"
 
             Notification.objects.create(
-                user = prestation.prestataire_cible, 
-                message = f"Vous avez reçu une nouvelle demande de prestation de {client_username}.",
-                prestation = prestation
+                user=prestation.prestataire_cible,
+                message=f"Vous avez reçu une nouvelle demande de prestation de {client_username}.",
+                prestation=prestation
             )
             notify_user(
-                user_id = prestation.prestataire_cible.id,
-                message = f"Nouvelle demande de prestation : {prestation.titre} par {client_username}.",
-                payload = {
+                user_id=prestation.prestataire_cible.id,
+                message=f"Nouvelle demande de prestation : {prestation.titre} par {client_username}.",
+                payload={
                     "id": prestation.id,
                     "titre": prestation.titre,
                     "description": prestation.description,
