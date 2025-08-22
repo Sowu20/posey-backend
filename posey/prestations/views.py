@@ -149,17 +149,17 @@ class DemandePrestationView(generics.CreateAPIView):
         if prestation.prestataire_cible:
             Notification.objects.create(
                 user=prestation.prestataire_cible,
-                message=f"Vous avez reçu une nouvelle demande de prestation de {client_username}.",
+                message=f"Vous avez reçu une nouvelle demande de prestation de {request.user.username}.",
                 prestation=prestation
             )
             notify_user(
                 user_id=prestation.prestataire_cible.id,
-                message=f"Nouvelle demande de prestation : {prestation.titre} par {client_username}.",
+                message=f"Nouvelle demande de prestation : {prestation.titre} par {request.user.username}.",
                 payload={
                     "id": prestation.id,
                     "titre": prestation.titre,
                     "description": prestation.description,
-                    "client": client_username, 
+                    # "client": client_username, 
                     "date_demande": str(prestation.date_demande),
                 }
             )
