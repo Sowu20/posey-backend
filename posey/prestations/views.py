@@ -213,7 +213,7 @@ class AccepterPrestationView(APIView):
     def post(self, request, id):
         try:
             prestation = Prestation.objects.get(id=id)
-            prestation.prestataire = request.user
+            prestataire_username = prestation.prestataire
             prestation.statut = 'accepte'
             prestation.save()
             if prestation.accepte(request.user):
