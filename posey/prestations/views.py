@@ -155,7 +155,7 @@ class DemandePrestationView(generics.CreateAPIView):
                     "id": prestation.id,
                     "titre": prestation.titre,
                     "description": prestation.description,
-                    "client": prestation.client_username,
+                    "client": prestation.client.username,
                     "date_demande": str(prestation.date_demande),
                 }
             )
