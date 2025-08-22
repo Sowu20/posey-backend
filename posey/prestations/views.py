@@ -213,19 +213,25 @@ class AccepterPrestationView(APIView):
                 return Response({'error': 'Cette prestation a déjà été attribuée.'}, status=400)
 
             # Assigner le prestataire connecté
-            prestation.prestataire = request.user
+            prestation.prestataire = prestation.prestataire_cible
             prestation.statut = "accepte"
             prestation.save()
 
             # Créer la notification
             Notification.objects.create(
                 user=prestation.client,
-                message=f"Votre demande de prestation {prestation.titre} est acceptée par {request.user.username}."
+                message=f"Votre demande de prestation {prestation.titre} est acceptée par {prestation.prestataire.username}."
             )
 
             notify_user(
                 user_id=prestation.client.id,
-                message=f"Votre demande de prestation {prestation.titre} est acceptée par {request.user.username}."
+                message=f"Votre demande de prestation {prestation.titre} est acceptée par {prestation.prestataire.username}.",
+                payload={
+                    "id": prestation.id,
+                    "titre": prestation.titre,
+                    "statut": prestation.statut,
+                    "prestataire": prestation.prestataire.username
+                }
             )
 
             return Response({'message': 'Prestation acceptée'}, status=200)
