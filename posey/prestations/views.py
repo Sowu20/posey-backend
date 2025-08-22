@@ -272,12 +272,21 @@ class PrestatairePrestationsView(APIView):
 class PrestataireStatsView(APIView):
     def get(self, request, id):
         prestataire = get_object_or_404(User, id=id)
+
         prestations = Prestation.objects.filter(prestataire=prestataire)
         total_prestations = prestations.count()
-        prestations_en_attente = prestations.filter(statut='en_attente').count()
+
+        prestations_recues = prestations.filter(
+            prestataire_cible = prestataire,
+            prestataire__isnull=True,
+            statut='en_attente'
+        ).count()
+
+        prestations_en_attente = prestations.filter(statut="en_attente").count()
 
         return Response({
             "total_prestations": total_prestations,
+            "prestations_recues": prestations_recues,
             "prestations_en_attente": prestations_en_attente
         })
 
