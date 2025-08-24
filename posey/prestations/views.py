@@ -13,6 +13,7 @@ from drf_yasg import openapi
 from django.shortcuts import get_object_or_404
 from django.db import transaction, models
 from django.utils import timezone
+from django.db.models import Q
 from users.models import User
 from note.models import Note
 from notifications.utils import notify_user
@@ -273,7 +274,9 @@ class PrestataireStatsView(APIView):
     def get(self, request, id):
         prestataire = get_object_or_404(User, id=id)
 
-        prestations = Prestation.objects.filter(prestataire=prestataire)
+        prestations = Prestation.objects.filter(
+            Q(prestataire=prestataire) | Q(prestataire_cible=prestataire)
+        )
         total_prestations = prestations.count()
 
         prestations_en_attente = prestations.filter(
