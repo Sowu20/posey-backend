@@ -471,7 +471,6 @@ class RefuserPrestationView(APIView):
                 prestataire_username = "Un prestataire"
 
             prestataire_username = prestation.prestataire
-            prestataire_cible_username = prestation.prestataire_cible
             prestation.prestataire = None
             prestation.prestataire_cible = None
             prestation.statut = 'refusee'
@@ -479,11 +478,11 @@ class RefuserPrestationView(APIView):
             
             Notification.objects.create(
                 user=prestation.client, 
-                message=f"Votre demande de prestation {prestation.titre} est refusée par {prestataire_username | prestataire_cible_username}."
+                message=f"Votre demande de prestation {prestation.titre} est refusée par {prestataire_username}."
             )
             notify_user(
                 user_id = prestation.client.id,
-                message = f"Votre demande de prestation {prestation.titre} est refusée par {prestataire_username | prestataire_cible_username}."
+                message = f"Votre demande de prestation {prestation.titre} est refusée par {prestataire_username}."
             )
 
             return Response({'message': 'La prestation est refusée avec succès.'})
