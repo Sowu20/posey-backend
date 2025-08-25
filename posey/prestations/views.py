@@ -461,8 +461,18 @@ class RefuserPrestationView(APIView):
     def post(self, request, id):
         try:
             prestation = Prestation.objects.get(id=id)
+
+            # Vérifie qui refuse
+            if prestation.prestataire:
+                prestataire_username = prestation.prestataire.username
+            elif prestation.prestataire_cible:
+                prestataire_username = prestation.prestataire_cible.username
+            else:
+                prestataire_username = "Un prestataire"
+
             prestataire_username = prestation.prestataire
             prestation.prestataire = None
+            prestation.prestataire_cible = None
             prestation.statut = 'refusee'
             prestation.save()
             
