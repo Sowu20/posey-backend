@@ -466,11 +466,11 @@ class RefuserPrestationView(APIView):
             if prestation.prestataire:
                 prestataire_username = prestation.prestataire.username
             elif prestation.prestataire_cible:
-                prestataire_username = prestation.prestataire_cible_username
+                prestataire_username = prestation.prestataire_cible.username
             else:
                 prestataire_username = "Un prestataire"
 
-            prestataire_username = prestation.prestataire
+            # prestataire_username = prestation.prestataire
             prestation.prestataire = None
             prestation.prestataire_cible = None
             prestation.statut = 'refusee'
