@@ -178,7 +178,9 @@ class PrestataireView(APIView):
             prestataire = get_object_or_404(User, id=prestataire_id)
             
             # Filtrer les prestations avec l'ID du paramètre
-            prestations = Prestation.objects.filter(prestataire=prestataire_id)
+            prestations = Prestation.objects.filter(
+                Q(prestataire=prestataire_id) | Q(prestataire_cible=prestataire)
+            )
             prestations_serialized = PrestationSerializer(prestations, many=True).data
             
             # Calculer les statistiques
