@@ -7,7 +7,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-)kozn7!cqgydgx+2ow@5)eiby@&2=uyk-1g!84cbf4s2)-=zqs'
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "127.0.0.1:8000", "a5be9ff968f2.ngrok-free.app", "posey-frontend-y8so.vercel.app"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "127.0.0.1:8000", "3bf2ec69bcbe.ngrok-free.app", "posey-frontend-y8so.vercel.app"]
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
