@@ -14,7 +14,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5173",
     "http://127.0.0.1:8000",
     "http://127.0.0.1:4040",
-    "https://a5be9ff968f2.ngrok-free.app",
+    "https://3bf2ec69bcbe.ngrok-free.app",
     "https://posey-frontend-y8so.vercel.app",
 ]
 
