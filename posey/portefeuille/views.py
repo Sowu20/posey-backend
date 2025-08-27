@@ -243,24 +243,20 @@ class FairePaiementView(APIView):
         
 class VerifierPaiementView(APIView):
     @swagger_auto_schema(
+        operation_description="Vérifie l'état d'une transaction PayGate.",
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
-            required=["auth_token", "tx_reference"],
+            required=["tx_reference"],
             properties={
-                "auth_token": PAYGATE_AUTH_TOKEN,
                 "tx_reference": openapi.Schema(type=openapi.TYPE_INTEGER),
             },
         ),
         responses={200: "Statut mis à jour", 400: "Erreur de vérification"}
     )
     def post(self, request):
-        auth_token = request.data.get("auth_token") 
         tx_reference = request.data.get("tx_reference")
         url_verification = "https://paygateglobal.com/api/v1/status" 
-        payload = {
-            "auth_token": auth_token, 
-            "tx_reference": tx_reference
-        }
+        payload = {"tx_reference": tx_reference}
 
         try:
             response = requests.post(
@@ -465,20 +461,22 @@ class PayGateWebhookView(APIView):
             try:
                 transaction = Transaction.objects.get(identifier=reference)
                 
-                if status_code == 0:  # Succès
+                if status_code == 1:  
                     transaction.statut = "succes"
                     transaction.reference_externe = tx_reference
-                    
                     # Crédit du portefeuille
                     transaction.portefeuille.solde += transaction.montant
                     transaction.portefeuille.save()
-                    
                     logger.info(f"Paiement confirmé - Référence: {reference}")
                     
-                elif status_code == 1:  # Échec
+                elif status_code == 0:
+                    transaction.statut = "en attente"
+                    logger.info(f"Paiement en attente - Référence: {reference}")
+
+                elif status_code == 2: 
                     transaction.statut = "echec"
                     logger.warning(f"Paiement échoué - Référence: {reference}")
-                else:  # Annulé
+                else:  
                     transaction.statut = "annule"
                     logger.info(f"Paiement annulé - Référence: {reference}")
                 
