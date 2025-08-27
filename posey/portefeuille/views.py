@@ -243,20 +243,24 @@ class FairePaiementView(APIView):
         
 class VerifierPaiementView(APIView):
     @swagger_auto_schema(
-        operation_description="Vérifie l'état d'une transaction PayGate.",
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
-            required=["tx_reference"],
+            required=["auth_token", "tx_reference"],
             properties={
+                "auth_token": PAYGATE_AUTH_TOKEN,
                 "tx_reference": openapi.Schema(type=openapi.TYPE_INTEGER),
             },
         ),
         responses={200: "Statut mis à jour", 400: "Erreur de vérification"}
     )
     def post(self, request):
+        auth_token = request.data.get("auth_token") 
         tx_reference = request.data.get("tx_reference")
         url_verification = "https://paygateglobal.com/api/v1/status" 
-        payload = {"tx_reference": tx_reference}
+        payload = {
+            "auth_token": auth_token, 
+            "tx_reference": tx_reference
+        }
 
         try:
             response = requests.post(

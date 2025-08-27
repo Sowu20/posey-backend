@@ -14,9 +14,9 @@ class TransactionSerializer(serializers.ModelSerializer):
 class ListeTransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
-        fields = ['methode_payement', 'montant', 'statut', 'date_transaction', 'tx_reference']
+        fields = ['methode_payement', 'montant', 'statut', 'date_transaction']
 
 class ListeTransactionStatutSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
-        fields = ['methode_payement', 'statut', 'date_transaction', 'tx_reference']
+        fields = ['methode_payement', 'statut', 'date_transaction']
