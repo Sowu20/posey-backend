@@ -103,4 +103,12 @@ class PrestationClientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Prestation
-        fields = ['id', 'titre', 'statut', 'categorie', 'prestataire', 'date_demande'] 
+        fields = ['id', 'titre', 'statut', 'categorie', 'prestataire', 'date_demande']
+
+class PrestationPrixSerializer(serializers.ModelSerializer):
+    client = serializers.StringRelatedField()
+    prestataire = serializers.StringRelatedField()
+
+    class Meta:
+        model = Prestation
+        fields = ['id', 'titre', 'description', 'prix', 'client', 'prestataire', 'date_demande']

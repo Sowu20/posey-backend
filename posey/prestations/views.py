@@ -1,7 +1,7 @@
 from rest_framework import viewsets, generics
 from users.permissions import IsAdmin, IsClient, IsPrestataire
 from prestations.models import CategoriePrestation, Notification, Prestation, DemandeCiblee
-from prestations.serializers import NotificationSerializer, PrestationClientSerializer, RegisterCategorieSerializer, RegisterPrestationSerializer, UpdateCategorieSerializer, UpdatePrestationSerializer, DetailCategorieSerializer, DetailPrestationSerializer, ListePrestataireSerializer, PrestationSerializer, NoteSerializer, PrestationDisponibleSerializer, DemandeCibleeSerializer, PrestationRefuseeSerializer, PrestataireSerializer
+from prestations.serializers import NotificationSerializer, PrestationClientSerializer, RegisterCategorieSerializer, RegisterPrestationSerializer, UpdateCategorieSerializer, UpdatePrestationSerializer, DetailCategorieSerializer, DetailPrestationSerializer, ListePrestataireSerializer, PrestationSerializer, NoteSerializer, PrestationDisponibleSerializer, DemandeCibleeSerializer, PrestationRefuseeSerializer, PrestataireSerializer, PrestationPrixSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status, serializers
 from rest_framework.views import APIView
@@ -518,3 +518,9 @@ class PrestationsTermineesParPrestataire(APIView):
     def get(self, request, id):
         total = Prestation.objects.filter(prestataire_id=id, statut='terminee').count()
         return Response({"total": total})
+    
+class PrestationsAvecPrixListView(generics.ListAPIView):
+    serializer_class = PrestationPrixSerializer
+
+    def get_queryset(self):
+        return Prestation.objects.filter(prix__isnull=False).order_by('-date_demande')

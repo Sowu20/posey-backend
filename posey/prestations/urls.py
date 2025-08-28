@@ -1,5 +1,5 @@
 from django.urls import path
-from prestations.views import RegisterCategorieView, SupprimerNotificationView, PrestationClientView, PrestationRefusesView, PrestatairesNonValidesView, ValiderPrestataireView, PrestationsEnAttenteView, DemandePrestationView, RegisterPrestationView, UpdateCategorieView, PrestationsTermineesParPrestataire, UpdatePrestationView, GetCategorieView, GetPrestationView, DeleteCategorieView, DeletePrestationView, PrestataireView, AccepterPrestationView, PrestationsDisponibesParCategorie, PrestationsDisponiblesView, PrestataireAvisView, PrestataireNoteView, PrestatairePrestationsView, PrestataireStatsView, DemandeCibleeCreateView, DemandesRecuesView, RefuserPrestationView, NotificationListView, EnvoyerDemandeCibleeView, RepondreDemandeCibleeView, ListeNotificationsView, MarquerNotificationCommeLue, MarquerTousLue
+from prestations.views import RegisterCategorieView, SupprimerNotificationView, PrestationClientView, PrestationRefusesView, PrestatairesNonValidesView, ValiderPrestataireView, PrestationsEnAttenteView, DemandePrestationView, RegisterPrestationView, UpdateCategorieView, PrestationsTermineesParPrestataire, UpdatePrestationView, GetCategorieView, GetPrestationView, DeleteCategorieView, DeletePrestationView, PrestataireView, AccepterPrestationView, PrestationsDisponibesParCategorie, PrestationsDisponiblesView, PrestataireAvisView, PrestataireNoteView, PrestatairePrestationsView, PrestataireStatsView, DemandeCibleeCreateView, DemandesRecuesView, RefuserPrestationView, NotificationListView, EnvoyerDemandeCibleeView, RepondreDemandeCibleeView, ListeNotificationsView, MarquerNotificationCommeLue, MarquerTousLue, PrestationsAvecPrixListView
 
 urlpatterns = [
     # Catégorie
@@ -41,4 +41,5 @@ urlpatterns = [
     path('notifications/lue/<int:id>/', MarquerNotificationCommeLue.as_view()),
     path('notifications/tous_lues/', MarquerTousLue.as_view()),
     path('notifications/supprimer/<int:id>/', SupprimerNotificationView.as_view()),
+    path('prestations_avec_prix/', PrestationsAvecPrixListView.as_view()),
 ]
