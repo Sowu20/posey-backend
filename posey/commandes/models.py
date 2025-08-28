@@ -10,6 +10,6 @@ class Commande(models.Model):
     ]
     prestation = models.ForeignKey(Prestation, on_delete=models.CASCADE)
     client = models.ForeignKey(User, related_name='client', on_delete=models.CASCADE)
-    prestataire = models.ForeignKey(User, related_name='prestataire', on_delete=models.CASCADE)
+    prestataire = models.ForeignKey(User, related_name='prestataire', on_delete=models.CASCADE, null=True)
     date_commande = models.DateTimeField(auto_now_add=True)
     statut = models.CharField(max_length=20, choices=STATUT_CHOICE, default='en attente')
