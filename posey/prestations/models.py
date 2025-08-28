@@ -4,6 +4,7 @@ from django.conf import settings
 class CategoriePrestation(models.Model):
     nom = models.CharField(max_length=50)
     description = models.TextField()
+    image = models.ImageField(upload_to='categorie_images/', null=True, blank=True)
 
 class Prestation(models.Model):
     STATUT_CHOICES = [
