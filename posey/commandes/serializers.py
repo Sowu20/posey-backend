@@ -1,7 +1,6 @@
 from rest_framework import serializers
-from commandes.models import Commande
+from commandes.models import Commande, Prestation
 from users.serializers import UserSerializer
-from prestations.serializers import PrestationSerializer
 
 class RegisterCommandeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -29,4 +28,9 @@ class CommandeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Commande
-        fields = ['client' , 'statut', 'prestation', 'prestataire']
+        fields = ['client' , 'statut', 'prestation', 'prestataire', 'date_commande']
+
+class PrestationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Prestation
+        fields = ['id', 'titre', 'description', 'prix', 'client', 'prestataire', 'statut', 'date_demande']

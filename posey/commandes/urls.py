@@ -1,5 +1,5 @@
 from django.urls import path
-from commandes.views import RegisterCommandeView, StatutsCommandesUtilisateurView, CommandesClientView, UpdateCommandeView, DeleteCommandeView, GetCommandeView, CommandesParClientView, CommandesParStatutView, ChangerStatutCommandeView, HistoriqueCommandesClientView, DetailCommandeView
+from commandes.views import RegisterCommandeView, StatutsCommandesUtilisateurView, CommandesClientView, UpdateCommandeView, DeleteCommandeView, GetCommandeView, CommandesParClientView, CommandesParStatutView, ChangerStatutCommandeView, HistoriqueCommandesClientView, DetailCommandeView, MesCommandesView, PrestationsDisponibleView, AccepterCommandeView, RefuserCommandeView
 
 urlpatterns = [
     path('register_commande/', RegisterCommandeView.as_view(), name="register_categorie"),
@@ -13,4 +13,8 @@ urlpatterns = [
     path('client/<int:id>/', CommandesClientView.as_view(), name='commandes-client'),
     path('<int:id>/', DetailCommandeView.as_view()),
     path('statut/<int:id>/', StatutsCommandesUtilisateurView.as_view(), name='statuts-commandes-utilisateur'),
+    path('mes_commandes/', MesCommandesView.as_view(), name='mes-commandes'),
+    path('prestations_disponibles/', PrestationsDisponibleView.as_view(), name='prestations-disponibles'),
+    path('<int:id>/accepter/', AccepterCommandeView.as_view(), name='accepter-commande'),
+    path('<int:id>/refuser/', RefuserCommandeView.as_view(), name='refuser-commande'),
 ]

@@ -1,4 +1,4 @@
-from rest_framework import generics, status
+from rest_framework import generics, status, permissions
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -7,8 +7,9 @@ from django.shortcuts import get_object_or_404
 from drf_yasg import openapi
 from users.permissions import IsAdmin, IsClient, IsPrestataire
 from users.models import User
+from prestations.models import Prestation
 from commandes.models import Commande
-from commandes.serializers import RegisterCommandeSerializer, UpdateCommandeSerializer, DetailCommandeSerializer, CommandeSerializer
+from commandes.serializers import RegisterCommandeSerializer, UpdateCommandeSerializer, DetailCommandeSerializer, CommandeSerializer, PrestationSerializer
 
 class RegisterCommandeView(generics.CreateAPIView):
     queryset = Commande.objects.all()
@@ -129,3 +130,57 @@ class StatutsCommandesUtilisateurView(APIView):
             return Response({"statuts": list(statuts)}, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response({"message": "Utilisateur introuvable."}, status=status.HTTP_404_NOT_FOUND)
+        
+# Liste des commandes assignés au prestataire
+class MesCommandesView(generics.ListAPIView):
+    serializer_class = CommandeSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Commande.objects.filter(prestataire=self.request.user).order_by('-date_commande')
+    
+# Avoir les prestations disponible dans la catégorie d'un prestataire
+class PrestationsDisponibleView(generics.ListAPIView):
+    serializer_class = PrestationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if hasattr(user, "categorie"):  
+            return Prestation.objects.filter(
+                categorie=user.categorie,
+                statut='en_attente',
+                prestataire__isnull=True
+            )
+        return Prestation.objects.none()
+    
+# Accepter une commande
+class AccepterCommandeView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, id):
+        commande = get_object_or_404(Commande, id=id)
+
+        if commande.statut != 'en attente':
+            return Response({'error': 'Cette commande a déjà été traitée.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        commande.prestataire = request.user
+        commande.statut = 'accepte'
+        commande.save()
+
+        return Response({'success': 'Commande acceptée'}, status=status.HTTP_200_OK)
+    
+# Refuser une commande
+class RefuserCommandeView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, id):
+        commande = get_object_or_404(Commande, id=id)
+
+        if commande.statut != 'en attente':
+            return Response({'error': 'Impossible de refuser, cette commande est déjà traitée.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        commande.statut = 'refusee'
+        commande.save()
+
+        return Response({'success': 'Commande refusée'}, status=status.HTTP_200_OK)
