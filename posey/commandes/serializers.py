@@ -28,7 +28,7 @@ class CommandeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Commande
-        fields = ['client' , 'statut', 'prestation', 'prestataire', 'date_commande']
+        fields = ['id', 'client' , 'statut', 'prestation', 'prestataire', 'date_commande']
 
 class PrestationSerializer(serializers.ModelSerializer):
     class Meta:
