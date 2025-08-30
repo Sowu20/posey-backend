@@ -13,7 +13,6 @@ django-cors-headers==4.7.0
 djangorestframework==3.16.0
 djangorestframework_simplejwt==5.5.0
 drf-yasg==1.21.10
-gotrue==2.12.3
 h11==0.16.0
 h2==4.2.0
 hpack==4.1.0
