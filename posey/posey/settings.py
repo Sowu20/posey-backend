@@ -14,7 +14,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5173",
     "http://127.0.0.1:8000",
     "http://127.0.0.1:4040",
-    " https://bio-fair-complimentary-destinations.trycloudflare.com",
+    "https://bio-fair-complimentary-destinations.trycloudflare.com",
     "https://posey-frontend-y8so.vercel.app",
 ]
 
