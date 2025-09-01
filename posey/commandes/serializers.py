@@ -24,7 +24,7 @@ class DetailCommandeSerializer(serializers.ModelSerializer):
 class CommandeSerializer(serializers.ModelSerializer):
     titre = serializers.CharField(source='prestation.titre', read_only=True)
     description = serializers.CharField(source='prestation.description', read_only=True)
-    prix = serializers.ChoiceField(source='prestation.prix', max_digits=10, decimal_places=2, read_only=True)
+    prix = serializers.DecimalField(source='prestation.prix', max_digits=10, decimal_places=2, read_only=True)
     client = serializers.StringRelatedField()
     prestataire = serializers.StringRelatedField()
 
