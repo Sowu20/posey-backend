@@ -286,7 +286,7 @@ class VerifierPaiementView(APIView):
             statut_paygate = data.get("status")
             transaction = Transaction.objects.get(reference_externe=tx_reference)
 
-            if statut_paygate == 1:
+            if statut_paygate == 0:
                 if transaction.statut != "succes":
                     transaction.statut = "succes"
                     transaction.save()
@@ -305,7 +305,7 @@ class VerifierPaiementView(APIView):
                     "solde_utilisateur": portefeuille.solde
                 }, status=200)
 
-            elif statut_paygate == 0:
+            elif statut_paygate == 2:
                 return Response({
                     "message": "Paiement toujours en attente.",
                     "tx_reference": transaction.reference_externe,
@@ -314,7 +314,19 @@ class VerifierPaiementView(APIView):
                     "date_transaction": transaction.date_transaction,
                     "methode_payement": transaction.methode_payement
                 }, status=200)
-
+                
+            elif statut_paygate == 6:
+                transaction.statut = "annule"
+                transaction.save()
+                return Response({
+                    "message": "Paiement annulé.",
+                    "tx_reference": transaction.reference_externe,
+                    "reference": transaction.identifier,
+                    "statut": "annulé",
+                    "date_transaction": transaction.date_transaction,
+                    "methode_payement": transaction.methode_payement
+                }, status=200)
+            
             else:
                 transaction.statut = "echec"
                 transaction.save()
@@ -461,25 +473,24 @@ class PayGateWebhookView(APIView):
             try:
                 transaction = Transaction.objects.get(identifier=reference)
                 
-                if status_code == 1:  
+                if status_code == 0: 
                     transaction.statut = "succes"
                     transaction.reference_externe = tx_reference
-                    # Crédit du portefeuille
                     transaction.portefeuille.solde += transaction.montant
                     transaction.portefeuille.save()
-                    logger.info(f"Paiement confirmé - Référence: {reference}")
-                    
-                elif status_code == 0:
-                    transaction.statut = "en attente"
-                    logger.info(f"Paiement en attente - Référence: {reference}")
 
-                elif status_code == 2: 
-                    transaction.statut = "echec"
-                    logger.warning(f"Paiement échoué - Référence: {reference}")
-                else:  
+                elif status_code == 2:  
+                    transaction.statut = "en attente"
+
+                elif status_code == 4:  
+                    transaction.statut = "expire"
+
+                elif status_code == 6:  
                     transaction.statut = "annule"
-                    logger.info(f"Paiement annulé - Référence: {reference}")
-                
+
+                else:
+                    transaction.statut = "echec"
+
                 transaction.save()
                 
                 return Response({"message": "Webhook traité avec succès."}, status=status.HTTP_200_OK)
