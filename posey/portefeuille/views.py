@@ -224,7 +224,7 @@ class FairePaiementView(APIView):
             return len(clean_phone) == 8 and clean_phone.startswith(('90', '91', '92', '93', '94', '95', '96', '97', '98', '99', '70', '71', '72', '73', '74', '75', '76', '77', '78', '79'))
         elif network == "TMONEY":
             # Format T-Money: commence par 90, 91, 92, 93, 94, 95, 96, 97, 98, 99
-            return len(clean_phone) == 8 and clean_phone.startswith(('90', '91', '92', '93', '94', '95', '96', '97', '98', '99'))
+            return len(clean_phone) == 8 and clean_phone.startswith(('70', '71', '72', '73', '74', '75', '76', '77', '78', '79','90', '91', '92', '93', '94', '95', '96', '97', '98', '99'))
         
         return False
     
