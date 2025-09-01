@@ -22,13 +22,15 @@ class DetailCommandeSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class CommandeSerializer(serializers.ModelSerializer):
-    prestation = serializers.StringRelatedField()
+    titre = serializers.CharField(source='prestation.titre', read_only=True)
+    description = serializers.CharField(source='prestation.description', read_only=True)
+    prix = serializers.ChoiceField(source='prestation.prix', max_digits=10, decimal_places=2, read_only=True)
     client = serializers.StringRelatedField()
     prestataire = serializers.StringRelatedField()
 
     class Meta:
         model = Commande
-        fields = ['id', 'client' , 'statut', 'prestation', 'prestataire', 'date_commande']
+        fields = ['id', 'client' , 'statut', 'titre', 'description', 'prix', 'prestataire', 'date_commande']
 
 class PrestationSerializer(serializers.ModelSerializer):
     class Meta:
