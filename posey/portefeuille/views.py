@@ -286,7 +286,8 @@ class VerifierPaiementView(APIView):
             statut_paygate = data.get("status")
             transaction = Transaction.objects.get(reference_externe=tx_reference)
 
-            if statut_paygate == 0:
+            # === Gestion des statuts PayGate ===
+            if statut_paygate == 0:  
                 if transaction.statut != "succes":
                     transaction.statut = "succes"
                     transaction.save()
@@ -300,22 +301,37 @@ class VerifierPaiementView(APIView):
                     "message": "Paiement confirmé.",
                     "tx_reference": transaction.reference_externe,
                     "reference": transaction.identifier,
+                    "statut": "succes",
                     "date_transaction": transaction.date_transaction,
                     "methode_payement": transaction.methode_payement,
                     "solde_utilisateur": portefeuille.solde
                 }, status=200)
 
-            elif statut_paygate == 2:
+            elif statut_paygate == 2:  
+                transaction.statut = "en attente"
+                transaction.save()
                 return Response({
-                    "message": "Paiement toujours en attente.",
+                    "message": "Paiement en cours.",
                     "tx_reference": transaction.reference_externe,
                     "reference": transaction.identifier,
                     "statut": "en attente",
                     "date_transaction": transaction.date_transaction,
                     "methode_payement": transaction.methode_payement
                 }, status=200)
-                
-            elif statut_paygate == 6:
+
+            elif statut_paygate == 4: 
+                transaction.statut = "expire"
+                transaction.save()
+                return Response({
+                    "message": "Paiement expiré.",
+                    "tx_reference": transaction.reference_externe,
+                    "reference": transaction.identifier,
+                    "statut": "expiré",
+                    "date_transaction": transaction.date_transaction,
+                    "methode_payement": transaction.methode_payement
+                }, status=200)
+
+            elif statut_paygate == 6:  
                 transaction.statut = "annule"
                 transaction.save()
                 return Response({
@@ -326,8 +342,8 @@ class VerifierPaiementView(APIView):
                     "date_transaction": transaction.date_transaction,
                     "methode_payement": transaction.methode_payement
                 }, status=200)
-            
-            else:
+
+            else:  
                 transaction.statut = "echec"
                 transaction.save()
                 return Response({
