@@ -277,6 +277,7 @@ class VerifierPaiementView(APIView):
 
             try:
                 data = response.json()
+                # statut_paygate = int(data.get("status"))
             except ValueError:
                 return Response({
                     "message": "Réponse invalide de PayGate (non JSON)",
@@ -285,8 +286,9 @@ class VerifierPaiementView(APIView):
 
             statut_paygate = data.get("status")
             transaction = Transaction.objects.get(reference_externe=tx_reference)
+            portefeuille = transaction.portefeuille
 
-            # === Gestion des statuts PayGate ===
+            # Gestion des statuts PayGate
             if statut_paygate == 0:  
                 if transaction.statut != "succes":
                     transaction.statut = "succes"
