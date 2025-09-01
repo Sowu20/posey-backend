@@ -277,25 +277,29 @@ class VerifierPaiementView(APIView):
 
             try:
                 data = response.json()
-                # statut_paygate = int(data.get("status"))
             except ValueError:
                 return Response({
                     "message": "Réponse invalide de PayGate (non JSON)",
                     "contenu": response.text
                 }, status=400)
 
-            statut_paygate = data.get("status")
+            # Debug logs
+            print("Réponse PayGate", data)
+            print("Statut brut:", data.get("status"))
+            print("Type statut:", type(data.get("status")))
+
+            # Forcer la conversion en entier
+            statut_paygate = int(data.get("status", -1))
+
             transaction = Transaction.objects.get(reference_externe=tx_reference)
             portefeuille = transaction.portefeuille
 
             # Gestion des statuts PayGate
-            if statut_paygate == "0":  
+            if statut_paygate == 0:  
                 if transaction.statut != "succes":
                     transaction.statut = "succes"
                     transaction.save()
 
-                    # Mise à jour du portefeuille
-                    portefeuille = transaction.portefeuille
                     portefeuille.solde += transaction.montant
                     portefeuille.save()
 
@@ -309,7 +313,7 @@ class VerifierPaiementView(APIView):
                     "solde_utilisateur": portefeuille.solde
                 }, status=200)
 
-            elif statut_paygate == "2":  
+            elif statut_paygate == 2:  
                 transaction.statut = "en attente"
                 transaction.save()
                 return Response({
@@ -321,7 +325,7 @@ class VerifierPaiementView(APIView):
                     "methode_payement": transaction.methode_payement
                 }, status=200)
 
-            elif statut_paygate == "4": 
+            elif statut_paygate == 4: 
                 transaction.statut = "expire"
                 transaction.save()
                 return Response({
@@ -333,7 +337,7 @@ class VerifierPaiementView(APIView):
                     "methode_payement": transaction.methode_payement
                 }, status=200)
 
-            elif statut_paygate == "6":  
+            elif statut_paygate == 6:  
                 transaction.statut = "annule"
                 transaction.save()
                 return Response({
