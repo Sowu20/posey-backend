@@ -289,7 +289,7 @@ class VerifierPaiementView(APIView):
             portefeuille = transaction.portefeuille
 
             # Gestion des statuts PayGate
-            if statut_paygate == 0:  
+            if statut_paygate == "0":  
                 if transaction.statut != "succes":
                     transaction.statut = "succes"
                     transaction.save()
@@ -309,7 +309,7 @@ class VerifierPaiementView(APIView):
                     "solde_utilisateur": portefeuille.solde
                 }, status=200)
 
-            elif statut_paygate == 2:  
+            elif statut_paygate == "2":  
                 transaction.statut = "en attente"
                 transaction.save()
                 return Response({
@@ -321,7 +321,7 @@ class VerifierPaiementView(APIView):
                     "methode_payement": transaction.methode_payement
                 }, status=200)
 
-            elif statut_paygate == 4: 
+            elif statut_paygate == "4": 
                 transaction.statut = "expire"
                 transaction.save()
                 return Response({
@@ -333,7 +333,7 @@ class VerifierPaiementView(APIView):
                     "methode_payement": transaction.methode_payement
                 }, status=200)
 
-            elif statut_paygate == 6:  
+            elif statut_paygate == "6":  
                 transaction.statut = "annule"
                 transaction.save()
                 return Response({
