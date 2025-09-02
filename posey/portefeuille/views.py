@@ -283,6 +283,9 @@ class VerifierPaiementView(APIView):
         # On récupère la transaction locale
         transaction = Transaction.objects.filter(identifier=data.get("identifier")).first()
 
+        message = "Statut inconnu"
+        nouveau_solde = None
+
         if transaction:
             # Mise à jour des infos transaction
             transaction.statut = data.get("status", transaction.statut)
@@ -291,16 +294,29 @@ class VerifierPaiementView(APIView):
             transaction.telephone = data.get("phone_number", transaction.telephone)
             transaction.save()
 
-            # Si paiement confirmé et type = dépôt => on crédite le portefeuille
-            if transaction.statut == 0 and transaction.type_transaction == "depot" and not transaction.portefeuille_credite:
-                portefeuille = transaction.portefeuille
-                portefeuille.solde += transaction.montant
-                portefeuille.save()
-                transaction.portefeuille_credite = True
-                transaction.save()
+            # Paiement confirmé
+            if transaction.statut == 0:
+                message = "Paiement effectué avec succès."
+                # Créditer une seule fois
+                if transaction.type_transaction == "depot" and not transaction.portefeuille_credite:
+                    portefeuille = transaction.portefeuille
+                    portefeuille.solde += transaction.montant
+                    portefeuille.save()
+                    transaction.portefeuille_credite = True
+                    transaction.save()
+                nouveau_solde = str(transaction.portefeuille.solde)
+
+            elif transaction.statut == 2:
+                message = "Paiement en attente..."
+            elif transaction.statut == 4:
+                message = "Paiement expiré"
+            elif transaction.statut == 6:
+                message = "Paiement annulé"
+            else:
+                message = "Paiement échoué"
 
         return Response({
-            "message": "Paiement effectué avec succès",
+            "message": message,
             "transaction": {
                 "id": transaction.id if transaction else None,
                 "identifier": data.get("identifier"),
@@ -312,7 +328,7 @@ class VerifierPaiementView(APIView):
                 "datetime": data.get("datetime"),
                 "montant": str(transaction.montant) if transaction else None,
             },
-            "nouveau_solde": str(transaction.portefeuille.solde) if transaction and transaction.statut == 0 else None
+            "nouveau_solde": nouveau_solde
         }, status=status.HTTP_200_OK)
         
 class VerifierTransactionView(APIView):
