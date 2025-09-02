@@ -26,12 +26,13 @@ class Transaction(models.Model):
     type_transaction = models.CharField(max_length=35, choices=TRANSACTION, default='depot')
     methode_payement = models.CharField(max_length=35, choices=METHODE_PAYEMENT, default='TMONEY')
     telephone = models.CharField(max_length=20)
-    statut = models.CharField(max_length=20, choices=[
-        ('en attente', 'En attente'),
-        ('succes', 'Succès'),
-        ('echec', 'Échec'),
-        ('annule', 'Annulé')
-    ], default='en attente')
+    statut = models.IntegerField(choices=[
+        (0, 'Succès'),
+        (2, 'En attente'),
+        (4, 'Expiré'),
+        (6, 'Annulé'),
+        (-1, 'Echoué')
+    ], default=2)
     identifier = models.CharField(max_length=255, unique=True, blank=True, null=True)
     reference_externe = models.CharField(max_length=255, blank=True, null=True)
     date_transaction = models.DateTimeField(auto_now_add=True)

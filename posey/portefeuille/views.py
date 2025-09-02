@@ -121,7 +121,7 @@ class FairePaiementView(APIView):
                 montant=amount,
                 methode_payement=network,
                 telephone=phone_number,
-                statut="en_attente",
+                statut=2,
                 identifier=identifier,
                 description=description
             )
@@ -152,7 +152,7 @@ class FairePaiementView(APIView):
                 
             except requests.exceptions.RequestException as e:
                 logger.error(f"Erreur de requête PayGate: {str(e)}")
-                transaction.statut = "echec"
+                transaction.statut = -1
                 transaction.save()
                 return Response({
                     "detail": "Erreur de communication avec PayGate.",
@@ -164,7 +164,7 @@ class FairePaiementView(APIView):
                 paygate_response = response.json()
             except ValueError as e:
                 logger.error(f"Réponse PayGate invalide (non JSON): {response.text}")
-                transaction.statut = "echec"
+                transaction.statut = -1
                 transaction.save()
                 return Response({
                     "detail": "Réponse PayGate invalide.",
@@ -194,7 +194,7 @@ class FairePaiementView(APIView):
             else:
                 # Gestion des erreurs PayGate
                 error_message = self._get_paygate_error_message(paygate_response.get("status"))
-                transaction.statut = "echec"
+                transaction.statut = -1
                 transaction.save()
                 
                 logger.error(f"Échec PayGate - Statut: {paygate_response.get('status')}, Message: {error_message}")
@@ -289,15 +289,15 @@ class VerifierPaiementView(APIView):
             print("Type statut:", type(data.get("status")))
 
             # Forcer la conversion en entier
-            statut_paygate = int(data.get("status", -1))
+            statut_paygate = data.get("status", -1)
 
             transaction = Transaction.objects.get(reference_externe=tx_reference)
             portefeuille = transaction.portefeuille
 
             # Gestion des statuts PayGate
             if statut_paygate == 0:  
-                if transaction.statut != "succes":
-                    transaction.statut = "succes"
+                if transaction.statut != 0:
+                    transaction.statut = 0
                     transaction.save()
 
                     portefeuille.solde += transaction.montant
@@ -307,56 +307,56 @@ class VerifierPaiementView(APIView):
                     "message": "Paiement confirmé.",
                     "tx_reference": transaction.reference_externe,
                     "reference": transaction.identifier,
-                    "statut": "succes",
+                    "statut": 0,
                     "date_transaction": transaction.date_transaction,
                     "methode_payement": transaction.methode_payement,
                     "solde_utilisateur": portefeuille.solde
                 }, status=200)
 
             elif statut_paygate == 2:  
-                transaction.statut = "en attente"
+                transaction.statut = 2
                 transaction.save()
                 return Response({
                     "message": "Paiement en cours.",
                     "tx_reference": transaction.reference_externe,
                     "reference": transaction.identifier,
-                    "statut": "en attente",
+                    "statut": 2,
                     "date_transaction": transaction.date_transaction,
                     "methode_payement": transaction.methode_payement
                 }, status=200)
 
             elif statut_paygate == 4: 
-                transaction.statut = "expire"
+                transaction.statut = 4
                 transaction.save()
                 return Response({
                     "message": "Paiement expiré.",
                     "tx_reference": transaction.reference_externe,
                     "reference": transaction.identifier,
-                    "statut": "expiré",
+                    "statut": 4,
                     "date_transaction": transaction.date_transaction,
                     "methode_payement": transaction.methode_payement
                 }, status=200)
 
             elif statut_paygate == 6:  
-                transaction.statut = "annule"
+                transaction.statut = 6
                 transaction.save()
                 return Response({
                     "message": "Paiement annulé.",
                     "tx_reference": transaction.reference_externe,
                     "reference": transaction.identifier,
-                    "statut": "annulé",
+                    "statut": 6,
                     "date_transaction": transaction.date_transaction,
                     "methode_payement": transaction.methode_payement
                 }, status=200)
 
             else:  
-                transaction.statut = "echec"
+                transaction.statut = -1
                 transaction.save()
                 return Response({
                     "message": "Paiement échoué.",
                     "tx_reference": transaction.reference_externe,
                     "reference": transaction.identifier,
-                    "statut": "échec",
+                    "statut": -1,
                     "date_transaction": transaction.date_transaction,
                     "methode_payement": transaction.methode_payement
                 }, status=200)
@@ -496,22 +496,22 @@ class PayGateWebhookView(APIView):
                 transaction = Transaction.objects.get(identifier=reference)
                 
                 if status_code == 0: 
-                    transaction.statut = "succes"
+                    transaction.statut = 0
                     transaction.reference_externe = tx_reference
                     transaction.portefeuille.solde += transaction.montant
                     transaction.portefeuille.save()
 
                 elif status_code == 2:  
-                    transaction.statut = "en attente"
+                    transaction.statut = 2
 
                 elif status_code == 4:  
-                    transaction.statut = "expire"
+                    transaction.statut = 4
 
                 elif status_code == 6:  
-                    transaction.statut = "annule"
+                    transaction.statut = 6
 
                 else:
-                    transaction.statut = "echec"
+                    transaction.statut = -1
 
                 transaction.save()
                 
