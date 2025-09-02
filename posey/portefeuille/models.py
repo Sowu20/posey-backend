@@ -22,6 +22,7 @@ class Transaction(models.Model):
     ]
 
     portefeuille = models.ForeignKey(Portefeuille, on_delete=models.CASCADE)
+    portefeuille_credite = models.BooleanField(default=False)
     montant = models.DecimalField(max_digits=10, decimal_places=2)
     type_transaction = models.CharField(max_length=35, choices=TRANSACTION, default='depot')
     methode_payement = models.CharField(max_length=35, choices=METHODE_PAYEMENT, default='TMONEY')

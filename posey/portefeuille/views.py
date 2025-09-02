@@ -292,10 +292,12 @@ class VerifierPaiementView(APIView):
             transaction.save()
 
             # Si paiement confirmé et type = dépôt => on crédite le portefeuille
-            if transaction.statut == 0 and transaction.type_transaction == "depot":
+            if transaction.statut == 0 and transaction.type_transaction == "depot" and not transaction.portefeuille_credite:
                 portefeuille = transaction.portefeuille
                 portefeuille.solde += transaction.montant
                 portefeuille.save()
+                transaction.portefeuille_credite = True
+                transaction.save()
 
         return Response({
             "message": "Statut mis à jour",
