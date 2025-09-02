@@ -255,6 +255,12 @@ class VerifierPaiementView(APIView):
     )
     def post(self, request):
         tx_reference = request.data.get("tx_reference")
+        
+        if not tx_reference:
+            return Response({
+                "message": "La référence de transaction est requise."
+            }, status=400)
+            
         url_verification = "https://paygateglobal.com/api/v1/status" 
         payload = {"tx_reference": tx_reference}
 
@@ -285,22 +291,64 @@ class VerifierPaiementView(APIView):
 
             # Debug logs
             print("Réponse PayGate", data)
-            print("Statut brut:", data.get("status"))
-            print("Type statut:", type(data.get("status")))
+            
+            # Vérifier d'abord s'il y a une erreur dans la réponse PayGate
+            if 'error_code' in data:
+                error_code = data.get('error_code')
+                error_message = data.get('error_message', 'Erreur inconnue')
+                
+                print(f"Erreur PayGate - Code: {error_code}, Message: {error_message}")
+                
+                # Gérer les différents codes d'erreur PayGate
+                if error_code == 403:
+                    return Response({
+                        "message": f"Erreur PayGate: {error_message}",
+                        "error_code": error_code,
+                        "tx_reference": tx_reference
+                    }, status=400)
+                elif error_code == 404:
+                    return Response({
+                        "message": "Transaction non trouvée chez PayGate",
+                        "error_code": error_code,
+                        "tx_reference": tx_reference
+                    }, status=404)
+                else:
+                    return Response({
+                        "message": f"Erreur PayGate: {error_message}",
+                        "error_code": error_code,
+                        "tx_reference": tx_reference
+                    }, status=400)
 
             statut_paygate = data.get("status")
+            print("Statut brut:", statut_paygate)
+            print("Type statut:", type(statut_paygate))
+            
+            if statut_paygate is None:
+                return Response({
+                    "message": "Statut de transaction manquant dans la réponse PayGate",
+                    "paygate_response": data,
+                    "tx_reference": tx_reference
+                }, status=400)
 
-            transaction = Transaction.objects.get(reference_externe=tx_reference)
+            try:
+                transaction = Transaction.objects.get(reference_externe=tx_reference)
+            except Transaction.DoesNotExist:
+                return Response({
+                    "message": "Transaction introuvable dans notre système.",
+                    "tx_reference": tx_reference
+                }, status=404)
+
             portefeuille = transaction.portefeuille
+            ancien_statut = transaction.statut
 
-            # Gestion des statuts PayGate
-            if statut_paygate == 0:  
+            if statut_paygate == 0: 
                 if transaction.statut != 0:
                     transaction.statut = 0
                     transaction.save()
 
-                    portefeuille.solde += transaction.montant
-                    portefeuille.save()
+                    if ancien_statut != 0:
+                        portefeuille.solde += transaction.montant
+                        portefeuille.save()
 
                 return Response({
                     "message": "Paiement confirmé.",
@@ -313,8 +361,10 @@ class VerifierPaiementView(APIView):
                 }, status=200)
 
             elif statut_paygate == 2:  
-                transaction.statut = 2
-                transaction.save()
+                if transaction.statut != 2:
+                    transaction.statut = 2
+                    transaction.save()
+                    
                 return Response({
                     "message": "Paiement en cours.",
                     "tx_reference": transaction.reference_externe,
@@ -325,8 +375,10 @@ class VerifierPaiementView(APIView):
                 }, status=200)
 
             elif statut_paygate == 4: 
-                transaction.statut = 4
-                transaction.save()
+                if transaction.statut != 4:
+                    transaction.statut = 4
+                    transaction.save()
+                    
                 return Response({
                     "message": "Paiement expiré.",
                     "tx_reference": transaction.reference_externe,
@@ -337,8 +389,10 @@ class VerifierPaiementView(APIView):
                 }, status=200)
 
             elif statut_paygate == 6:  
-                transaction.statut = 6
-                transaction.save()
+                if transaction.statut != 6:
+                    transaction.statut = 6
+                    transaction.save()
+                    
                 return Response({
                     "message": "Paiement annulé.",
                     "tx_reference": transaction.reference_externe,
@@ -348,9 +402,11 @@ class VerifierPaiementView(APIView):
                     "methode_payement": transaction.methode_payement
                 }, status=200)
 
-            else:  
-                transaction.statut = -1
-                transaction.save()
+            else: 
+                if transaction.statut != -1:
+                    transaction.statut = -1
+                    transaction.save()
+                    
                 return Response({
                     "message": "Paiement échoué.",
                     "tx_reference": transaction.reference_externe,
@@ -360,10 +416,14 @@ class VerifierPaiementView(APIView):
                     "methode_payement": transaction.methode_payement
                 }, status=200)
 
-        except Transaction.DoesNotExist:
-            return Response({"message": "Transaction introuvable."}, status=404)
+        except requests.RequestException as e:
+            return Response({
+                "message": f"Erreur de connexion à PayGate: {str(e)}"
+            }, status=500)
         except Exception as e:
-            return Response({"message": str(e)}, status=500)
+            return Response({
+                "message": f"Erreur interne: {str(e)}"
+            }, status=500)
         
 class VerifierTransactionView(APIView):
     @swagger_auto_schema(
