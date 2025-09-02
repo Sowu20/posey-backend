@@ -283,13 +283,11 @@ class VerifierPaiementView(APIView):
                     "contenu": response.text
                 }, status=400)
 
-            # Debug logs
             print("Réponse PayGate", data)
             print("Statut brut:", data.get("status"))
             print("Type statut:", type(data.get("status")))
 
-            # Forcer la conversion en entier
-            statut_paygate = data.get("status", -1)
+            statut_paygate = data.get("status")
 
             transaction = Transaction.objects.get(reference_externe=tx_reference)
             portefeuille = transaction.portefeuille
