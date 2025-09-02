@@ -265,7 +265,7 @@ class VerifierPaiementView(APIView):
 
         url = "https://paygateglobal.com/api/v1/status"
         payload = {
-            "auth_token": settings.PAYGATE_AUTH_TOKEN,
+            "auth_token": PAYGATE_AUTH_TOKEN,
             "tx_reference": tx_reference
         }
 
