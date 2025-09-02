@@ -283,6 +283,7 @@ class VerifierPaiementView(APIView):
                     "contenu": response.text
                 }, status=400)
 
+            # Debug logs
             print("Réponse PayGate", data)
             print("Statut brut:", data.get("status"))
             print("Type statut:", type(data.get("status")))
