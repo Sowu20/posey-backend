@@ -300,7 +300,7 @@ class VerifierPaiementView(APIView):
                 transaction.save()
 
         return Response({
-            "message": "Statut mis à jour",
+            "message": "Paiement effectué avec succès",
             "transaction": {
                 "id": transaction.id if transaction else None,
                 "identifier": data.get("identifier"),
