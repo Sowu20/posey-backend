@@ -11,6 +11,7 @@ from portefeuille.models import Portefeuille, Transaction
 from portefeuille.serializers import PortefeuilleSerializer, TransactionSerializer, ListeTransactionStatutSerializer, ListeTransactionSerializer
 from django.db import models
 from django.contrib.auth.models import User
+from django.conf import settings
 from users.models import User
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
@@ -264,7 +265,7 @@ class VerifierPaiementView(APIView):
 
         url = "https://paygateglobal.com/api/v1/status"
         payload = {
-            "auth_token": PAYGATE_AUTH_TOKEN,
+            "auth_token": settings.PAYGATE_AUTH_TOKEN,
             "tx_reference": tx_reference
         }
 
