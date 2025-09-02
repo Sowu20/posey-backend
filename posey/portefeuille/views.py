@@ -243,187 +243,74 @@ class FairePaiementView(APIView):
         
 class VerifierPaiementView(APIView):
     @swagger_auto_schema(
-        operation_description="Vérifie l'état d'une transaction PayGate.",
+        operation_description="Vérifie l'état d'une transaction PayGateGlobal.",
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             required=["tx_reference"],
             properties={
-                "tx_reference": openapi.Schema(type=openapi.TYPE_INTEGER),
+                "tx_reference": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="Identifiant unique de la transaction PayGate"
+                ),
             },
         ),
-        responses={200: "Statut mis à jour", 400: "Erreur de vérification"}
+        responses={200: "Statut de paiement", 400: "Erreur de vérification"}
     )
     def post(self, request):
         tx_reference = request.data.get("tx_reference")
-        
+
         if not tx_reference:
-            return Response({
-                "message": "La référence de transaction est requise."
-            }, status=400)
-            
-        url_verification = "https://paygateglobal.com/api/v1/status" 
-        payload = {"tx_reference": tx_reference}
+            return Response({"error": "tx_reference est requis"}, status=status.HTTP_400_BAD_REQUEST)
+
+        url = "https://paygateglobal.com/api/v1/status"
+        payload = {
+            "auth_token": PAYGATE_AUTH_TOKEN,
+            "tx_reference": tx_reference
+        }
 
         try:
-            response = requests.post(
-                url_verification,
-                headers={
-                    "Authorization": f"Bearer {PAYGATE_AUTH_TOKEN}",
-                    "Content-Type": "application/json"
-                },
-                json=payload
+            response = requests.post(url, json=payload, timeout=10)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            return Response(
+                {"error": f"Erreur lors de la connexion à PayGate: {str(e)}"},
+                status=status.HTTP_502_BAD_GATEWAY
             )
 
-            if response.status_code != 200:
-                return Response({
-                    "message": "Erreur lors de la requête PayGate",
-                    "status_code": response.status_code,
-                    "response_text": response.text
-                }, status=400)
+        data = response.json()
 
-            try:
-                data = response.json()
-            except ValueError:
-                return Response({
-                    "message": "Réponse invalide de PayGate (non JSON)",
-                    "contenu": response.text
-                }, status=400)
+        # On récupère la transaction locale
+        transaction = Transaction.objects.filter(identifier=data.get("identifier")).first()
 
-            # Debug logs
-            print("Réponse PayGate", data)
-            
-            # Vérifier d'abord s'il y a une erreur dans la réponse PayGate
-            if 'error_code' in data:
-                error_code = data.get('error_code')
-                error_message = data.get('error_message', 'Erreur inconnue')
-                
-                print(f"Erreur PayGate - Code: {error_code}, Message: {error_message}")
-                
-                # Gérer les différents codes d'erreur PayGate
-                if error_code == 403:
-                    return Response({
-                        "message": f"Erreur PayGate: {error_message}",
-                        "error_code": error_code,
-                        "tx_reference": tx_reference
-                    }, status=400)
-                elif error_code == 404:
-                    return Response({
-                        "message": "Transaction non trouvée chez PayGate",
-                        "error_code": error_code,
-                        "tx_reference": tx_reference
-                    }, status=404)
-                else:
-                    return Response({
-                        "message": f"Erreur PayGate: {error_message}",
-                        "error_code": error_code,
-                        "tx_reference": tx_reference
-                    }, status=400)
+        if transaction:
+            # Mise à jour des infos transaction
+            transaction.statut = data.get("status", transaction.statut)
+            transaction.reference_externe = data.get("payment_reference", transaction.reference_externe)
+            transaction.methode_payement = data.get("payment_method", transaction.methode_payement)
+            transaction.telephone = data.get("phone_number", transaction.telephone)
+            transaction.save()
 
-            statut_paygate = data.get("status")
-            print("Statut brut:", statut_paygate)
-            print("Type statut:", type(statut_paygate))
-            
-            if statut_paygate is None:
-                return Response({
-                    "message": "Statut de transaction manquant dans la réponse PayGate",
-                    "paygate_response": data,
-                    "tx_reference": tx_reference
-                }, status=400)
+            # Si paiement confirmé et type = dépôt => on crédite le portefeuille
+            if transaction.statut == 0 and transaction.type_transaction == "depot":
+                portefeuille = transaction.portefeuille
+                portefeuille.solde += transaction.montant
+                portefeuille.save()
 
-            try:
-                transaction = Transaction.objects.get(reference_externe=tx_reference)
-            except Transaction.DoesNotExist:
-                return Response({
-                    "message": "Transaction introuvable dans notre système.",
-                    "tx_reference": tx_reference
-                }, status=404)
-
-            portefeuille = transaction.portefeuille
-            ancien_statut = transaction.statut
-
-            if statut_paygate == 0: 
-                if transaction.statut != 0:
-                    transaction.statut = 0
-                    transaction.save()
-
-                    if ancien_statut != 0:
-                        portefeuille.solde += transaction.montant
-                        portefeuille.save()
-
-                return Response({
-                    "message": "Paiement confirmé.",
-                    "tx_reference": transaction.reference_externe,
-                    "reference": transaction.identifier,
-                    "statut": 0,
-                    "date_transaction": transaction.date_transaction,
-                    "methode_payement": transaction.methode_payement,
-                    "solde_utilisateur": portefeuille.solde
-                }, status=200)
-
-            elif statut_paygate == 2:  
-                if transaction.statut != 2:
-                    transaction.statut = 2
-                    transaction.save()
-                    
-                return Response({
-                    "message": "Paiement en cours.",
-                    "tx_reference": transaction.reference_externe,
-                    "reference": transaction.identifier,
-                    "statut": 2,
-                    "date_transaction": transaction.date_transaction,
-                    "methode_payement": transaction.methode_payement
-                }, status=200)
-
-            elif statut_paygate == 4: 
-                if transaction.statut != 4:
-                    transaction.statut = 4
-                    transaction.save()
-                    
-                return Response({
-                    "message": "Paiement expiré.",
-                    "tx_reference": transaction.reference_externe,
-                    "reference": transaction.identifier,
-                    "statut": 4,
-                    "date_transaction": transaction.date_transaction,
-                    "methode_payement": transaction.methode_payement
-                }, status=200)
-
-            elif statut_paygate == 6:  
-                if transaction.statut != 6:
-                    transaction.statut = 6
-                    transaction.save()
-                    
-                return Response({
-                    "message": "Paiement annulé.",
-                    "tx_reference": transaction.reference_externe,
-                    "reference": transaction.identifier,
-                    "statut": 6,
-                    "date_transaction": transaction.date_transaction,
-                    "methode_payement": transaction.methode_payement
-                }, status=200)
-
-            else: 
-                if transaction.statut != -1:
-                    transaction.statut = -1
-                    transaction.save()
-                    
-                return Response({
-                    "message": "Paiement échoué.",
-                    "tx_reference": transaction.reference_externe,
-                    "reference": transaction.identifier,
-                    "statut": -1,
-                    "date_transaction": transaction.date_transaction,
-                    "methode_payement": transaction.methode_payement
-                }, status=200)
-
-        except requests.RequestException as e:
-            return Response({
-                "message": f"Erreur de connexion à PayGate: {str(e)}"
-            }, status=500)
-        except Exception as e:
-            return Response({
-                "message": f"Erreur interne: {str(e)}"
-            }, status=500)
+        return Response({
+            "message": "Statut mis à jour",
+            "transaction": {
+                "id": transaction.id if transaction else None,
+                "identifier": data.get("identifier"),
+                "tx_reference": data.get("tx_reference"),
+                "payment_reference": data.get("payment_reference"),
+                "payment_method": data.get("payment_method"),
+                "phone_number": data.get("phone_number"),
+                "status": data.get("status"),
+                "datetime": data.get("datetime"),
+                "montant": str(transaction.montant) if transaction else None,
+            },
+            "nouveau_solde": str(transaction.portefeuille.solde) if transaction and transaction.statut == 0 else None
+        }, status=status.HTTP_200_OK)
         
 class VerifierTransactionView(APIView):
     @swagger_auto_schema(
