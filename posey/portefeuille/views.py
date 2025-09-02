@@ -541,49 +541,67 @@ class PayGateWebhookView(APIView):
         try:
             data = request.data
             logger.info(f"Webhook PayGate reçu: {data}")
-            
+           
             tx_reference = data.get("tx_reference")
             status_code = data.get("status")
             reference = data.get("reference")
-            
+           
             if not reference:
+                logger.error("Webhook PayGate: référence manquante")
                 return Response({
                     "detail": "Référence manquante."
                 }, status=status.HTTP_400_BAD_REQUEST)
-            
+           
+            if status_code is None:
+                logger.error("Webhook PayGate: status_code manquant")
+                return Response({
+                    "detail": "Status code manquant."
+                }, status=status.HTTP_400_BAD_REQUEST)
+           
             try:
                 transaction = Transaction.objects.get(identifier=reference)
+                ancien_statut = transaction.statut
                 
-                if status_code == 0: 
+                logger.info(f"Transaction trouvée: {reference}, ancien statut: {ancien_statut}, nouveau statut: {status_code}")
+               
+                if status_code == 0:  # Succès
                     transaction.statut = 0
-                    transaction.reference_externe = tx_reference
-                    transaction.portefeuille.solde += transaction.montant
-                    transaction.portefeuille.save()
-
-                elif status_code == 2:  
+                    if tx_reference:
+                        transaction.reference_externe = tx_reference
+                    
+                    # Ajouter le montant au portefeuille seulement si ce n'était pas déjà fait
+                    if ancien_statut != 0:
+                        transaction.portefeuille.solde += transaction.montant
+                        transaction.portefeuille.save()
+                        logger.info(f"Solde mis à jour pour {reference}: +{transaction.montant}")
+                    
+                elif status_code == 2:  # En attente
                     transaction.statut = 2
-
-                elif status_code == 4:  
+                elif status_code == 4:  # Expiré
                     transaction.statut = 4
-
-                elif status_code == 6:  
+                elif status_code == 6:  # Annulé
                     transaction.statut = 6
-
-                else:
+                else:  # Autres = Échec
                     transaction.statut = -1
-
+                
                 transaction.save()
-                
-                return Response({"message": "Webhook traité avec succès."}, status=status.HTTP_200_OK)
-                
+                logger.info(f"Transaction {reference} mise à jour avec le statut {status_code}")
+               
+                return Response({
+                    "message": "Webhook traité avec succès.",
+                    "transaction_id": reference,
+                    "new_status": status_code
+                }, status=status.HTTP_200_OK)
+               
             except Transaction.DoesNotExist:
                 logger.error(f"Transaction introuvable pour la référence: {reference}")
                 return Response({
-                    "detail": "Transaction introuvable."
+                    "detail": f"Transaction introuvable pour la référence: {reference}"
                 }, status=status.HTTP_404_NOT_FOUND)
-                
+               
         except Exception as e:
             logger.error(f"Erreur dans PayGateWebhookView: {str(e)}")
             return Response({
-                "detail": "Erreur lors du traitement du webhook."
+                "detail": "Erreur lors du traitement du webhook.",
+                "error": str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
