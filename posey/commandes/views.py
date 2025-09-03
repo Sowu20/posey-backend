@@ -191,43 +191,38 @@ class CreerCommandeView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        client = request.user
+        user = request.user
+        portefeuille = getattr(user, "portefeuille", None)
+
+        if not portefeuille:
+            return Response({"error": "Portefeuille introuvable."}, status=400)
+
         prestation_id = request.data.get("prestation_id")
-
-        if not prestation_id:
-            return Response({"error": "ID de prestation manquant"}, status=400)
-
         try:
             prestation = Prestation.objects.get(id=prestation_id)
         except Prestation.DoesNotExist:
-            return Response({"error": "Prestation introuvable"}, status=404)
+            return Response({"error": "Prestation introuvable."}, status=404)
 
-        try:
-            portefeuille = Portefeuille.objects.get(user=client)
-        except Portefeuille.DoesNotExist:
-            return Response({"error": "Portefeuille introuvable"}, status=404)
-
+        # Vérifier le solde
         if portefeuille.solde < prestation.prix:
             return Response(
-                {"error": "Solde insuffisant, rechargez votre portefeuille."},
+                {"error": "Solde insuffisant, veuillez recharger votre portefeuille."},
                 status=400
             )
 
-        # Déduction du solde
+        # Déduction immédiate et sécurisée
         portefeuille.solde -= prestation.prix
         portefeuille.save()
 
-        # Création de la commande
+        # Créer la commande
         commande = Commande.objects.create(
-            client=client,
+            client=user,
             prestation=prestation,
             montant=prestation.prix,
-            statut="en_attente"
+            statut="payee"  # au lieu de "en_attente"
         )
 
-        return Response({
-            "success": True,
-            "message": "Commande créée avec succès ✅",
-            "commande_id": commande.id,
-            "nouveau_solde": portefeuille.solde
-        }, status=201)
+        return Response(
+            {"message": "Commande payée et créée avec succès.", "commande_id": commande.id},
+            status=201
+        )
