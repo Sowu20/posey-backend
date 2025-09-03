@@ -199,7 +199,7 @@ class CreerCommandeView(APIView):
                 "error": "Prestation introuvable"
             }, status=404)
         
-        portefeuille = Portefeuille.objects.get(utilisateur=client)
+        portefeuille = Portefeuille.objects.get(user=client)
         if portefeuille.solde < prestation.prix:
             return Response(
                 {
