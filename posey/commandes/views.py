@@ -188,35 +188,41 @@ class RefuserCommandeView(APIView):
 
 # Créer une commande
 class CreerCommandeView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
         client = request.user
         prestation_id = request.data.get("prestation_id")
 
+        if not prestation_id:
+            return Response({"error": "ID de prestation manquant"}, status=400)
+
         try:
             prestation = Prestation.objects.get(id=prestation_id)
         except Prestation.DoesNotExist:
-            return Response({
-                "error": "Prestation introuvable"
-            }, status=404)
-        
-        portefeuille = Portefeuille.objects.get(user=client)
+            return Response({"error": "Prestation introuvable"}, status=404)
+
+        try:
+            portefeuille = Portefeuille.objects.get(user=client)
+        except Portefeuille.DoesNotExist:
+            return Response({"error": "Portefeuille introuvable"}, status=404)
+
         if portefeuille.solde < prestation.prix:
             return Response(
-                {
-                    "error": "Solde insuffisant, rechargez votre portefeuille."
-                }, status=400
+                {"error": "Solde insuffisant, rechargez votre portefeuille."},
+                status=400
             )
-        
+
         # Déduction du solde
         portefeuille.solde -= prestation.prix
         portefeuille.save()
 
         # Création de la commande
         commande = Commande.objects.create(
-            client = client,
-            prestation = prestation,
-            montant = prestation.prix,
-            statut = "en_attente"
+            client=client,
+            prestation=prestation,
+            montant=prestation.prix,
+            statut="en_attente"
         )
 
         return Response({
