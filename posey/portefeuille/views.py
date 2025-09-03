@@ -424,7 +424,7 @@ class ListeTransactionStatutView(generics.ListAPIView):
 
     def get_queryset(self):
         statut = self.request.query_params.get('statut')
-        valid_statut = ['en attente', 'succes', 'echec', 'annule']
+        valid_statut = [0, 2, 4, 6, -1]
         if statut in valid_statut:
             return Transaction.objects.filter(statut=statut)
         return Transaction.objects.filter(statut__in=valid_statut)
