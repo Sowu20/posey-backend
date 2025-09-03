@@ -9,6 +9,7 @@ from users.permissions import IsAdmin, IsClient, IsPrestataire
 from users.models import User
 from prestations.models import Prestation
 from commandes.models import Commande
+from portefeuille.models import Portefeuille
 from commandes.serializers import RegisterCommandeSerializer, UpdateCommandeSerializer, DetailCommandeSerializer, CommandeSerializer, PrestationSerializer
 
 class RegisterCommandeView(generics.CreateAPIView):
@@ -184,3 +185,43 @@ class RefuserCommandeView(APIView):
         commande.save()
 
         return Response({'success': 'Commande refusée'}, status=status.HTTP_200_OK)
+
+# Créer une commande
+class CreerCommandeView(APIView):
+    def post(self, request):
+        client = request.user
+        prestation_id = request.data.get("prestation_id")
+
+        try:
+            prestation = Prestation.objects.get(id=prestation_id)
+        except Prestation.DoesNotExist:
+            return Response({
+                "error": "Prestation introuvable"
+            }, status=404)
+        
+        portefeuille = Portefeuille.objects.get(utilisateur=client)
+        if portefeuille.solde < prestation.prix:
+            return Response(
+                {
+                    "error": "Solde insuffisant, rechargez votre portefeuille."
+                }, status=400
+            )
+        
+        # Déduction du solde
+        portefeuille.solde -= prestation.prix
+        portefeuille.save()
+
+        # Création de la commande
+        commande = Commande.objects.create(
+            client = client,
+            prestation = prestation,
+            montant = prestation.prix,
+            statut = "en_attente"
+        )
+
+        return Response({
+            "success": True,
+            "message": "Commande créée avec succès ✅",
+            "commande_id": commande.id,
+            "nouveau_solde": portefeuille.solde
+        }, status=201)
