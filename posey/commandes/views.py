@@ -188,7 +188,7 @@ class RefuserCommandeView(APIView):
 
 # Créer une commande
 class CreerCommandeView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
         user = request.user
@@ -219,7 +219,7 @@ class CreerCommandeView(APIView):
             client=user,
             prestation=prestation,
             montant=prestation.prix,
-            statut="payee"  # au lieu de "en_attente"
+            statut="en_atente"  
         )
 
         return Response(
