@@ -206,8 +206,7 @@ class CreerCommandeView(APIView):
         # Vérifier le solde
         if portefeuille.solde < prestation.prix:
             return Response(
-                {"error": "Solde insuffisant, veuillez recharger votre portefeuille."},
-                status=400
+                {"error": "Solde insuffisant, veuillez recharger votre portefeuille."},status=400
             )
 
         # Déduction immédiate et sécurisée
@@ -223,6 +222,5 @@ class CreerCommandeView(APIView):
         )
 
         return Response(
-            {"message": "Commande payée et créée avec succès.", "commande_id": commande.id},
-            status=201
+            {"message": "Commande payée et créée avec succès.", "commande_id": commande.id},status=201
         )
