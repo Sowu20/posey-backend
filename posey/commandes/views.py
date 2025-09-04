@@ -188,7 +188,7 @@ class RefuserCommandeView(APIView):
 
 # Créer une commande
 class CreerCommandeView(APIView):
-    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
         user = request.user
