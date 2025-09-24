@@ -8,6 +8,10 @@ from rest_framework.generics import RetrieveAPIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
+from django.core.mail import send_mail
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes
+from django.contrib.auth.tokens import default_token_generator
 from users.models import User, Messages
 from prestations.models import CategoriePrestation
 from users.serializers import PrestataireSerializer, PrestataireDetailSerializer,  UserDetailSerializer, UserSerializer, LoginSerializer, RegisterSerializer, UpdateSerializer, DetailSerializer, UserListByLocationSerializer, UserListByRoleSerializer, PrestataireSerializer, ListePrestataireSerializer, UserListByQuartierSerializer, UserListByVilleSerializer
@@ -167,3 +171,50 @@ class AdminOnlyView(APIView):
 
     def get(self, request):
         return Response({"message": "Bienvenue Admin !"}, status=status.HTTP_200_OK)
+    
+class ResetPasswordView(APIView):
+    def post(self, request):
+        email = request.data.get("email")
+        try:
+            user = User.objects.get(email=email)
+            uid = urlsafe_base64_encode(force_bytes(user.id))
+            token = default_token_generator.make_token(user)
+
+            reset_link = f"https://voip-reactions-singles-agriculture.trycloudflare.com/reset_password/{uid}/{token}/"
+            send_mail(
+                "Réinitialier votre mot de passe",
+                f"Cliquez sur ce lien pour réinitialiser votre mot de passe : {reset_link}",
+                "no-reply@posey.com",
+                [email],
+                fail_silently=False,
+            )
+            return Response({
+                "message": "Le lien pour réinitialiser est envoyé."
+            }, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({
+                "error": "Aucun utilisateur trouvé cet email."
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+class ResetPasswordConfirmView(APIView):
+    def post(self, request, uidb64, token):
+        try:
+            uid = urlsafe_base64_decode(uidb64).decode()
+            user = User.objects.get(id=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            return Response({
+                "error": "Lien invalide"
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not default_token_generator.check_token(user, token):
+            return Response({"error": "Token invalide ou expiré"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        new_password = request.data.get("password")
+        if not new_password:
+            return Response({"error": "Le mot de passe est requis"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        user.set_password(new_password)
+        user.save()
+        return Response({
+            "message": "Mot de passe réinitialisé avec succès"
+        }, status=status.HTTP_200_OK)

@@ -7,14 +7,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-)kozn7!cqgydgx+2ow@5)eiby@&2=uyk-1g!84cbf4s2)-=zqs'
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "127.0.0.1:8000", "voip-reactions-singles-agriculture.trycloudflare.com", "posey-frontend-y8so.vercel.app"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "127.0.0.1:8000", "integrate-months-conditional-distributed.trycloudflare.com", "posey-frontend-y8so.vercel.app"]
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://127.0.0.1:8000",
     "http://127.0.0.1:4040",
-    "https://voip-reactions-singles-agriculture.trycloudflare.com",
+    "https://integrate-months-conditional-distributed.trycloudflare.com",
     "https://posey-frontend-y8so.vercel.app",
 ]
 
@@ -87,6 +87,14 @@ CHANNEL_LAYERS = {
     }, 
 }
 
+# Configuration avec une boîte Gmail
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'sowukelly67@gmail.com'
+EMAIL_HOST_PASSWORD = 'sowukelly20'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 DATABASES = {
     'default': {
