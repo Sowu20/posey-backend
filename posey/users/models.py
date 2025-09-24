@@ -1,4 +1,6 @@
+import uuid
 from django.db import models
+from django.utils import timezone
 from prestations.models import CategoriePrestation
 from django.contrib.auth.models import AbstractUser
 
@@ -23,3 +25,15 @@ class Messages(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     contenu = models.TextField()
     date_envoie = models.DateTimeField(auto_now_add=True)
+
+class ResetPasswordToken(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_used = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'password_reset_tokens'
+
+    def is_expired(self):
+        return timezone() > self.created_at + timezone.timedelta(hours=1)

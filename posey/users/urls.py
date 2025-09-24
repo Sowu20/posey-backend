@@ -1,5 +1,5 @@
 from django.urls import path
-from users.views import PrestataireListView, PrestataireDetailView, UserDetailByIdView, LoginAPIView, RegisterView, UpdateView, GetView, DeleteView, UsersByLocationView, UsersByQuartierView, UsersByVilleView, UsersByRoleView, PrestatairesAvecCategorieView, ListePrestataireParCategorieView, ResetPasswordView, ResetPasswordConfirmView
+from users.views import PrestataireListView, PrestataireDetailView, UserDetailByIdView, LoginAPIView, RegisterView, UpdateView, GetView, DeleteView, UsersByLocationView, UsersByQuartierView, UsersByVilleView, UsersByRoleView, PrestatairesAvecCategorieView, ListePrestataireParCategorieView, ResetPasswordView, ResetPasswordConfirmView, ResetPasswordTokenValidateView
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
@@ -17,5 +17,6 @@ urlpatterns = [
     path('<int:id>/', UserDetailByIdView.as_view(), name='user-detail-by-id'),
     path('prestataires/<int:id>/', PrestataireDetailView.as_view(), name='prestataire-detail'),
     path('reset_password/', ResetPasswordView.as_view(), name="reset_password"),
-    path('reset_password_confirm/<uidb64>/<token>', ResetPasswordConfirmView.as_view(), name='reset_password_confirm')
+    path('reset_password_confirm/', ResetPasswordConfirmView.as_view(), name='reset_password_confirm'),
+    path('reset_password_validate/<uuid:token>/', ResetPasswordTokenValidateView.as_view(), name='reset_password_validate')
 ]

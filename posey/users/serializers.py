@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
+from django.core.validators import validate_email
+from django.contrib.auth.password_validation import validate_password
 from users.models import User
 from prestations.models import CategoriePrestation
 
@@ -147,3 +149,28 @@ class PrestataireDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'nom', 'prenom', 'image', 'categorie', 'quartier', 'ville']
+
+class ResetPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        try:
+            validate_email(value)
+            User.objects.get(email=value)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("Aucun utilisateur trouvé avec cette adresse email")
+        return value
+
+class ResetPasswordConfirmSerializer(serializers.Serializer):
+    token = serializers.UUIDField()
+    new_password = serializers.CharField(min_length=8, write_only=True)
+    confirm_password = serializers.CharField(write_only=True)
+
+    def validate_new_password(self, value):
+        validate_password(value)
+        return value
+
+    def validate(self, attrs):
+        if attrs['new_password'] != attrs['confirm_password']:
+            raise serializers.ValidationError("Les mots de passe ne correspondent pas.")
+        return attrs
