@@ -7,14 +7,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-)kozn7!cqgydgx+2ow@5)eiby@&2=uyk-1g!84cbf4s2)-=zqs'
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "127.0.0.1:8000", "dubai-explorer-end-civil.trycloudflare.com", "posey-frontend-y8so.vercel.app"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "127.0.0.1:8000", "level-hobby-auburn-enterprises.trycloudflare.com", "posey-frontend-y8so.vercel.app"]
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://127.0.0.1:8000",
     "http://127.0.0.1:4040",
-    "https://dubai-explorer-end-civil.trycloudflare.com",
+    "https://level-hobby-auburn-enterprises.trycloudflare.com",
     "https://posey-frontend-y8so.vercel.app",
 ]
 

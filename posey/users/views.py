@@ -211,7 +211,7 @@ class ResetPasswordView(APIView):
                 }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             
 class ResetPasswordConfirmView(APIView):
-    def post(self, request):
+    def get(self, request):
         serializer = ResetPasswordConfirmSerializer(data=request.data)
 
         if serializer.is_valid():
