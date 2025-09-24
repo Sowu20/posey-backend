@@ -4,17 +4,17 @@ from .permissions import IsAdmin, IsClient, IsPrestataire
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import RetrieveAPIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-from django.conf import settings
 from django.core.mail import send_mail
-from django.urls import reverse
-from users.models import User, Messages, ResetPasswordToken
-from prestations.models import CategoriePrestation
-from users.serializers import PrestataireSerializer, PrestataireDetailSerializer,  UserDetailSerializer, UserSerializer, LoginSerializer, RegisterSerializer, UpdateSerializer, DetailSerializer, UserListByLocationSerializer, UserListByRoleSerializer, PrestataireSerializer, ListePrestataireSerializer, UserListByQuartierSerializer, UserListByVilleSerializer, ResetPasswordSerializer, ResetPasswordConfirmSerializer
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes
+from django.conf import settings
+from django.contrib.auth.tokens import default_token_generator
+from users.models import User
+from users.serializers import PrestataireSerializer, PrestataireDetailSerializer,  UserDetailSerializer, UserSerializer, LoginSerializer, RegisterSerializer, UpdateSerializer, DetailSerializer, UserListByLocationSerializer, UserListByRoleSerializer, PrestataireSerializer, UserListByQuartierSerializer, UserListByVilleSerializer
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
@@ -174,91 +174,40 @@ class AdminOnlyView(APIView):
     
 class ResetPasswordView(APIView):
     def post(self, request):
-        serializer = ResetPasswordSerializer(data=request.data)
+        email = request.data.get("email")
+        try:
+            user = User.objects.get(email=email)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
 
-        if serializer.is_valid():
-            email = serializer.validated_data['email']
-            try:
-                user = User.objects.get(email=email)
-                ResetPasswordToken.objects.filter(user=user, is_used=False).update(is_used=True)
-                reset_token = ResetPasswordToken.objects.create(user=user)
+            reset_link = f"https://posey-frontend-y8so.vercel.app/reset-password/{uid}/{token}/"
 
-                reset_url = f"https://posey-frontend-y8so.vercel.app/reset_password/{reset_token.token}"
-
-                send_mail(
-                    "Réinitialisation de votre de passe"
-                    f"""
-                        Bonjour {user.prenom},
-                        Vous avez demandé la réinitialisation de votre mot de passe:
-                        {reset_url}
-                        Ce lien expirera dans 1 heure
-                     """,
-                    settings.DEFAULT_FROM_EMAIL
-                    [email],
-                    fail_silently=False
-                )
-
-                return Response({
-                    'message': 'Un email de réinitialisation a été envoyé à votre adresse.'
-                }, status=status.HTTP_200_OK)
-            except User.DoesNotExist:
-                return Response({
-                    'message': 'Un email de réinitialisation a été envoyé à votre adresse.'
-                }, status=status.HTTP_200_OK)
-            except Exception as e:
-                return Response({
-                    'error': 'Erreur lors de l\'envoi de l\'email. Veuillez réessayer plus tard.'
-                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            send_mail(
+                "Réinitialisation de mot de passe",
+                f"Cliquez sur ce lien pour réinitialiser votre mot de passe : {reset_link}",
+                settings.DEFAULT_FROM_EMAIL,
+                [email],
+                fail_silently=False,
+            )
+            return Response({"message": "Lien de réinitialisation envoyé."}, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({"error": "Aucun utilisateur trouvé avec cet email."}, status=status.HTTP_404_NOT_FOUND)
             
 class ResetPasswordConfirmView(APIView):
-    def get(self, request):
-        serializer = ResetPasswordConfirmSerializer(data=request.data)
-
-        if serializer.is_valid():
-            token = serializer.validated_data['token']
-            new_password = serializer.validated_data['new_password']
-            try:
-                reset_token = ResetPasswordToken.objects.get(token=token, is_used=False)
-                if reset_token.is_expired():
-                    return Response({
-                        'error': 'Le token a expiré. Veuillez faire une nouvelle demande.'
-                    }, status=status.HTTP_400_BAD_REQUEST)
-                
-                user = reset_token.user
-                user.set_password(new_password)
-                user.save()
-
-                reset_token.is_used = True
-                reset_token.save()
-
-                return Response({
-                    'message': 'Votre mot de passe a été réinitialisé avec succès.'
-                }, status=status.HTTP_200_OK)
-            except ResetPasswordToken.DoesNotExist:
-                return Response({
-                    'error': 'Token invalide ou déjà utilisé.'
-                }, status=status.HTTP_400_BAD_REQUEST)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-class ResetPasswordTokenValidateView(APIView):
-    def get(request, token):
+    def post(self, request, uidb64, token):
         try:
-            reset_token = ResetPasswordToken.objects.get(token=token, is_used=False)
-            
-            if reset_token.is_expired():
-                return Response({
-                    'valid': False,
-                    'error': 'Le token a expiré.'
-                }, status=status.HTTP_400_BAD_REQUEST)
-            
-            return Response({
-                'valid': True,
-                'user_email': reset_token.user.email
-            }, status=status.HTTP_200_OK)
-            
-        except ResetPasswordToken.DoesNotExist:
-            return Response({
-                'valid': False,
-                'error': 'Token invalide.'
-            }, status=status.HTTP_400_BAD_REQUEST)
+            uid = urlsafe_base64_decode(uidb64).decode()
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            return Response({"error": "Lien invalide"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not default_token_generator.check_token(user, token):
+            return Response({"error": "Token invalide ou expiré"}, status=status.HTTP_400_BAD_REQUEST)
+
+        new_password = request.data.get("password")
+        if not new_password:
+            return Response({"error": "Le mot de passe est requis"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.set_password(new_password)
+        user.save()
+        return Response({"message": "Mot de passe réinitialisé avec succès"}, status=status.HTTP_200_OK)
