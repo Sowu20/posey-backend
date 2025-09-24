@@ -180,7 +180,7 @@ class ResetPasswordView(APIView):
             uid = urlsafe_base64_encode(force_bytes(user.id))
             token = default_token_generator.make_token(user)
 
-            reset_link = f"https://voip-reactions-singles-agriculture.trycloudflare.com/reset_password/{uid}/{token}/"
+            reset_link = f"https://posey-frontend-y8so.vercel.app/reset_password/{uid}/{token}/"
             send_mail(
                 "Réinitialier votre mot de passe",
                 f"Cliquez sur ce lien pour réinitialiser votre mot de passe : {reset_link}",
