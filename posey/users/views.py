@@ -173,7 +173,7 @@ class AdminOnlyView(APIView):
         return Response({"message": "Bienvenue Admin !"}, status=status.HTTP_200_OK)
     
 class ResetPasswordView(APIView):
-    def reset_password(self, request):
+    def post(self, request):
         serializer = ResetPasswordSerializer(data=request.data)
 
         if serializer.is_valid():
@@ -211,7 +211,7 @@ class ResetPasswordView(APIView):
                 }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             
 class ResetPasswordConfirmView(APIView):
-    def reset_password_confirm(self, request):
+    def post(self, request):
         serializer = ResetPasswordConfirmSerializer(data=request.data)
 
         if serializer.is_valid():
@@ -242,7 +242,7 @@ class ResetPasswordConfirmView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class ResetPasswordTokenValidateView(APIView):
-    def reset_password_token_validate(request, token):
+    def get(request, token):
         try:
             reset_token = ResetPasswordToken.objects.get(token=token, is_used=False)
             
