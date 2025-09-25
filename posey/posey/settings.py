@@ -7,14 +7,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-)kozn7!cqgydgx+2ow@5)eiby@&2=uyk-1g!84cbf4s2)-=zqs'
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "127.0.0.1:8000", "cash-tel-reproductive-drainage.trycloudflare.com", "posey-frontend-y8so.vercel.app"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "127.0.0.1:8000", "drum-vii-portions-arizona.trycloudflare.com", "posey-frontend-y8so.vercel.app"]
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://127.0.0.1:8000",
     "http://127.0.0.1:4040",
-    "https://cash-tel-reproductive-drainage.trycloudflare.com",
+    "https://drum-vii-portions-arizona.trycloudflare.com",
     "https://posey-frontend-y8so.vercel.app",
 ]
 
@@ -96,7 +96,7 @@ EMAIL_HOST_USER = 'sowukelly67@gmail.com'
 EMAIL_HOST_PASSWORD = 'rpwrrbwobgwryjue'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-FRONTEND_URL = 'http://localhost:5173'
+FRONTEND_URL = 'https://posey-frontend-y8so.vercel.app'
 
 DATABASES = {
     'default': {
