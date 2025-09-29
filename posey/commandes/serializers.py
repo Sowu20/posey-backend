@@ -5,7 +5,7 @@ from users.serializers import UserSerializer
 class RegisterCommandeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Commande
-        fields = ['prestation', 'client', 'prestataire', 'statut']
+        fields = ['prestation', 'service', 'client', 'prestataire', 'statut']
     
 class UpdateCommandeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -16,6 +16,7 @@ class DetailCommandeSerializer(serializers.ModelSerializer):
     prestation = serializers.CharField(source='prestation.titre', read_only=True)
     client = serializers.StringRelatedField()
     prestataire = serializers.CharField(source='prestataire.nom', read_only=True)
+    service = serializers.CharField(source='service.nom', read_only=True)
     
     class Meta:
         model = Commande
