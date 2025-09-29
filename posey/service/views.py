@@ -16,7 +16,10 @@ class ServiceListCreateView(generics.ListCreateAPIView):
         serializer.save(prestataire=self.request.user)
 
 # Détail, modification, suppresion d'un service
-class ServiceDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Service.objects.all()
+class ServiceDetailView(generics.ListAPIView):
+    # queryset = Service.objects.all()
     serializer_class = ServiceSerializer
     # permission_classes = [permissions.IsAuthenticated]
+    def get_queryset(self):
+        prestataire_id = self.kwargs.get("id")
+        return Service.objects.filter(prestataire_id=prestataire_id).order_by("-date_creation")

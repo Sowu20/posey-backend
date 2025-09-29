@@ -3,5 +3,5 @@ from .views import ServiceListCreateView, ServiceDetailView
 
 urlpatterns = [
     path('prestataire/<int:prestataire_id>/', ServiceListCreateView.as_view(), name='service-list-create'),
-    path('list_service/<int:pk>/', ServiceDetailView.as_view(), name='service-detail')
+    path('list_service/<int:id>/', ServiceDetailView.as_view(), name='service-detail')
 ]
