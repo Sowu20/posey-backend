@@ -6,7 +6,7 @@ from prestations.models import CategoriePrestation, Prestation
 class Service(models.Model):
     prestataire = models.ForeignKey(User, on_delete=models.CASCADE, related_name="services")
     categorie = models.ForeignKey(CategoriePrestation, on_delete=models.CASCADE, related_name="categorie_service")
-    prestation = models.ForeignKey(Prestation, on_delete=models.CASCADE, related_name="prestation")
+    prestation = models.ForeignKey(Prestation, on_delete=models.CASCADE, related_name="prestation", null=True)
     nom = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
     prix = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
