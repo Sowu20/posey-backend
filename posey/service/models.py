@@ -10,6 +10,7 @@ class Service(models.Model):
     description = models.TextField(blank=True, null=True)
     prix = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     date_creation = models.DateTimeField(auto_now_add=True)
+    image = models.ImageField(upload_to='service_images/', null=True, blank=True)
 
     def __str__(self):
         return f"{self.nom} - {self.prestataire.nom}"
