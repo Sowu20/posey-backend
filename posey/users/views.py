@@ -7,6 +7,7 @@ from rest_framework import status
 from rest_framework.generics import RetrieveAPIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password
 from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
@@ -211,3 +212,19 @@ class ResetPasswordConfirmView(APIView):
         user.set_password(new_password)
         user.save()
         return Response({"message": "Mot de passe réinitialisé avec succès"}, status=status.HTTP_200_OK)
+    
+class ChangePasswordView(APIView):
+    # permission_classes = [permissions.IsAuthenticated]
+
+    def put(self, request, id):
+        user = request.user
+        if user.id != id:
+            return Response({"error": "Non autorisé"}, status=status.HTTP_403_FORBIDDEN)
+
+        new_password = request.data.get("new_password")
+        if not new_password:
+            return Response({"error": "Le nouveau mot de passe est requis"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.password = make_password(new_password)
+        user.save()
+        return Response({"message": "Mot de passe changé avec succès"}, status=status.HTTP_200_OK)
