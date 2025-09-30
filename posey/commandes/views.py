@@ -217,6 +217,7 @@ class CreerCommandeView(APIView):
         commande = Commande.objects.create(
             client=user,
             prestation=prestation,
+            prestataire = prestation.prestataire,
             montant=prestation.prix,
             statut="en_atente"  
         )
