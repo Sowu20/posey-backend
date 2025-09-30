@@ -216,15 +216,13 @@ class ResetPasswordConfirmView(APIView):
 class ChangePasswordView(APIView):
     # permission_classes = [permissions.IsAuthenticated]
 
-    def put(self, request, id):
+    def put(self, request):
         user = request.user
-        if user.id != id:
-            return Response({"error": "Non autorisé"}, status=status.HTTP_403_FORBIDDEN)
-
         new_password = request.data.get("new_password")
+
         if not new_password:
             return Response({"error": "Le nouveau mot de passe est requis"}, status=status.HTTP_400_BAD_REQUEST)
 
-        user.password = make_password(new_password)
+        user.set_password(new_password)
         user.save()
         return Response({"message": "Mot de passe changé avec succès"}, status=status.HTTP_200_OK)
