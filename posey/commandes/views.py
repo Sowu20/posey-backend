@@ -10,6 +10,7 @@ from users.models import User
 from prestations.models import Prestation
 from commandes.models import Commande
 from portefeuille.models import Portefeuille
+from service.models import Service
 from commandes.serializers import RegisterCommandeSerializer, UpdateCommandeSerializer, DetailCommandeSerializer, CommandeSerializer, PrestationSerializer
 
 class RegisterCommandeView(generics.CreateAPIView):
@@ -197,31 +198,38 @@ class CreerCommandeView(APIView):
         if not portefeuille:
             return Response({"error": "Portefeuille introuvable."}, status=400)
 
-        prestation_id = request.data.get("prestation_id")
+        service_id = request.data.get("service_id")
         try:
-            prestation = Prestation.objects.get(id=prestation_id)
-        except Prestation.DoesNotExist:
-            return Response({"error": "Prestation introuvable."}, status=404)
+            service = Service.objects.get(id=service_id)
+        except Service.DoesNotExist:
+            return Response({"error": "Service introuvable."}, status=404)
 
         # Vérifier le solde
-        if portefeuille.solde < prestation.prix:
+        if portefeuille.solde < service.prix:
             return Response(
                 {"error": "Solde insuffisant, veuillez recharger votre portefeuille."},status=400
             )
 
         # Déduction immédiate et sécurisée
-        portefeuille.solde -= prestation.prix
+        portefeuille.solde -= service.prix
         portefeuille.save()
 
         # Créer la commande
         commande = Commande.objects.create(
             client=user,
-            prestation=prestation,
-            prestataire = prestation.prestataire,
-            montant=prestation.prix,
+            prestation=service,
+            prestataire = service.prestataire,
+            montant=service.prix,
             statut="en_atente"  
         )
 
         return Response(
-            {"message": "Commande payée et créée avec succès.", "commande_id": commande.id},status=201
+            {
+                "message": "Commande payée et créée avec succès.", 
+                "commande_id": commande.id,
+                "service": service.nom,
+                "prestataire": service.prestataire.nom,
+                "montant_deduit": service.prix,
+                "nouveau_solde": portefeuille.solde
+            },status=201
         )
