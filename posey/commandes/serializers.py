@@ -1,20 +1,11 @@
 from rest_framework import serializers
 from commandes.models import Commande, Prestation
 from users.serializers import UserSerializer
-from service.models import Service
 
 class RegisterCommandeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Commande
         fields = ['prestation', 'service', 'client', 'prestataire', 'statut']
-
-    def create(self, validated_data):
-        service = validated_data.get('service')
-        if service and service.prestation:
-            validated_data['prestation'] = service.prestation
-        else:
-            raise serializers.ValidationError({"service": "Ce service n'est pas lié à une prestation."})
-        return super().create(validated_data)
     
 class UpdateCommandeSerializer(serializers.ModelSerializer):
     class Meta:
