@@ -9,8 +9,7 @@ class ServiceListCreateView(generics.ListCreateAPIView):
     # permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        prestataire_id = self.kwargs['prestataire_id']
-        return Service.objects.filter(prestataire_id=prestataire_id)
+        return Service.objects.filter(prestataire=self.request.user)
     
     def perform_create(self, serializer):
         serializer.save(prestataire=self.request.user)
