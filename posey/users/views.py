@@ -181,7 +181,7 @@ class ResetPasswordView(APIView):
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             token = default_token_generator.make_token(user)
 
-            reset_link = f"https://posey-frontend-y8so.vercel.app/reset-password/{uid}/{token}/"
+            reset_link = f"https://posey-frontend-y8so.vercel.app/reset_password/{uid}/{token}/"
 
             send_mail(
                 "Réinitialisation de mot de passe",
