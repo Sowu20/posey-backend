@@ -21,7 +21,10 @@ class ServiceListCreateView(generics.ListCreateAPIView):
 # Enregistrer un service
 class RegisterServiceView(generics.CreateAPIView):
     queryset = Service.objects.all()
-    serializer_class = ServiceSerializer 
+    serializer_class = ServiceSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(prestataire=self.request.user) 
 
 # Liste des services d'un prestataire
 class ServiceDetailView(generics.ListAPIView):
