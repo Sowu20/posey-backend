@@ -7,14 +7,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-)kozn7!cqgydgx+2ow@5)eiby@&2=uyk-1g!84cbf4s2)-=zqs'
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "127.0.0.1:8000", "curves-essays-lands-drama.trycloudflare.com", "posey-frontend-y8so.vercel.app", "posey22.netlify.app"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "127.0.0.1:8000", "casino-statutes-wallpapers-mountains.trycloudflare.com", "posey-frontend-y8so.vercel.app", "posey22.netlify.app"]
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://127.0.0.1:8000",
     "http://127.0.0.1:4040",
-    "https://curves-essays-lands-drama.trycloudflare.com",
+    "https://casino-statutes-wallpapers-mountains.trycloudflare.com",
     "https://posey-frontend-y8so.vercel.app",
     "https://posey22.netlify.app",
 ]
